@@ -7,6 +7,7 @@ using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Data.Entity.Validation;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Net;
@@ -201,10 +202,19 @@ namespace Crawler {
 
         private void crawlLoop() {
             using(var ctx = new CrawlerContext()) {
+
+                long averageScanTime = 0;
+
                 //using(var dbContextTransaction = ctx.Database.BeginTransaction()) {
                 try {
                     while(this.running) {
                         try {
+
+
+                            Stopwatch stopwatch = new Stopwatch();
+                            stopwatch.Start();
+
+
                             using(var scope = new TransactionScope(TransactionScopeOption.Required,
                                 new TransactionOptions() { IsolationLevel = IsolationLevel.ReadCommitted })) {
                                 Page page = ctx.Pages.First(x => x.scanned == false);
@@ -222,6 +232,20 @@ namespace Crawler {
                                     Console.WriteLine("No more links to scan.");
                                 }
                             }
+
+                            stopwatch.Stop();
+
+                            long tmp = averageScanTime;
+                            averageScanTime += stopwatch.ElapsedMilliseconds;
+                            if (tmp > 0)
+                                averageScanTime /= 2;
+
+                            Console.WriteLine();
+                            Console.WriteLine("Last scan took:\t{0} ms.", stopwatch.ElapsedMilliseconds);
+                            Console.WriteLine("Average scan time:\t{0} ms.", averageScanTime);
+                            Console.WriteLine();
+
+
                         } catch(Exception e) {
                             Console.WriteLine(e.Message);
                             Console.WriteLine(e.StackTrace);
