@@ -168,7 +168,6 @@ namespace Crawler {
                         long lastScan = stopwatch.ElapsedMilliseconds;
                         BM.Insert(lastScan);
 
-                        Console.WriteLine("Avg link find: " + BM.AverageTime);
 
 
                         ctx.Set<Link>().Add(new Link() {
@@ -194,6 +193,7 @@ namespace Crawler {
 
                     }
 
+                    Console.WriteLine("Avg link find: " + BM.AverageTime);
                     ctx.SaveChanges();
                     ctx.Dispose();
                 }
