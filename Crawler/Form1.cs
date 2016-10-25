@@ -73,7 +73,7 @@ namespace Crawler {
                 using(var ctx = new CrawlerContext()) {
                     ctx.Pages.Attach(currentPage);
                     currentPage.title = title;
-                    ctx.Entry(currentPage).State = EntityState.Modified;
+                    //ctx.Entry(currentPage).State = EntityState.Modified;
                     ctx.SaveChanges();
                 }
 
@@ -184,7 +184,7 @@ namespace Crawler {
                             to_id = foundPage.id
                         });*/
 
-                        if (i % 1000 == 0) {
+                        if (i % 100 == 0) {
                             ctx.SaveChanges();
                             ctx.Dispose();
                             ctx = new CrawlerContext();
@@ -194,7 +194,15 @@ namespace Crawler {
                     }
 
                     Console.WriteLine("Avg link find: " + BM.AverageTime);
-                    ctx.SaveChanges();
+
+                    Stopwatch SW = new Stopwatch();
+                    SW.Start();
+                    if (ctx.ChangeTracker.HasChanges())
+                        ctx.SaveChanges();
+                    SW.Stop();
+
+                    Console.WriteLine(SW.ElapsedMilliseconds);
+
                     ctx.Dispose();
                 }
                 //ctx.Pages.AddRange(linkList);
@@ -210,13 +218,14 @@ namespace Crawler {
                 int maxQueueItems = 100;
                 Queue<long> timeQueue = new Queue<long>();
 
+                BenchMarker BM = new BenchMarker(100);
+
                 //using(var dbContextTransaction = ctx.Database.BeginTransaction()) {
                 try {
                     while(this.running) {
                         try {
 
 
-                            BenchMarker BM = new BenchMarker(100);
 
                             Stopwatch stopwatch = new Stopwatch();
                             stopwatch.Start();
