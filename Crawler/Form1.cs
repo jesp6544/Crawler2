@@ -76,7 +76,7 @@ namespace Crawler {
                 }
 
                 HtmlNodeCollection contentNodeCollection =
-                    doc.DocumentNode.SelectNodes("(//h1|//h2|//h3|//h4|//h5|//h6|//p|//div)[text()]");
+                    doc.DocumentNode.SelectNodes("(//h1|//h2|//h3|//h4|//h5|//h6|//p)[text()]");
                 if(contentNodeCollection != null) {
                     Console.WriteLine("Found {0} content tags", contentNodeCollection.Count);
                     using(var ctx = new CrawlerContext()) {
