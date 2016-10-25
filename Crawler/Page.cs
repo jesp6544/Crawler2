@@ -14,6 +14,8 @@ public class Page {
     [Key]
     public int id { get; set; }
 
+    [Column(TypeName = "VARCHAR")]
+    [StringLength(500)]
     [Index(IsUnique = true)]
     [Required]
     public string url { get; set; }
