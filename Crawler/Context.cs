@@ -19,7 +19,7 @@ namespace Crawler {
         //public CrawlerContext() : base("name=CrawlerConnectionString") { //to local DB
         public CrawlerContext() : base("Server =tcp:indexer.database.windows.net,1433;Initial Catalog = IndexerDB; Persist Security Info=False;User ID = asdfAdmin; Password=GhW-Z4x-v9Q-PNb;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout = 30;")  //to azure DB
         {
-        Database.SetInitializer<CrawlerContext>(new DBInitializer());
+            Database.SetInitializer<CrawlerContext>(new DBInitializer());
         }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder) {

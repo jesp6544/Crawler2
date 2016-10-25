@@ -61,8 +61,8 @@ namespace Crawler {
                     HTML = client.DownloadString(uri);
                 } catch(WebException e) {
                     Console.WriteLine(e.StackTrace);
-                    return;
-                    //throw;
+                    //return;
+                    throw;
                 }
 
                 HtmlAgilityPack.HtmlDocument doc = new HtmlAgilityPack.HtmlDocument();
@@ -71,6 +71,7 @@ namespace Crawler {
                 string title = doc.DocumentNode.SelectSingleNode("//title").InnerText;
 
                 using(var ctx = new CrawlerContext()) {
+                    ctx.Pages.Attach(currentPage);
                     currentPage.title = title;
                     ctx.Entry(currentPage).State = EntityState.Modified;
                     ctx.SaveChanges();
@@ -81,6 +82,9 @@ namespace Crawler {
                 if(contentNodeCollection != null) {
                     Console.WriteLine("Found {0} content tags", contentNodeCollection.Count);
                     using(var ctx = new CrawlerContext()) {
+
+                        ctx.Configuration.AutoDetectChangesEnabled = false;
+
                         foreach(HtmlNode node in contentNodeCollection) {
                             string content = node.InnerText.Trim();
 
@@ -103,6 +107,12 @@ namespace Crawler {
 
                     List<Page> linkList = new List<Page>();
 
+                    CrawlerContext ctx = new CrawlerContext();
+                    ctx.Configuration.AutoDetectChangesEnabled = false;
+
+
+                    int i = 1;
+                    BenchMarker BM = new BenchMarker(100);
                     foreach(HtmlNode node in linkNodeCollection) {
                         HtmlAttribute att = node.Attributes["href"];
 
@@ -135,68 +145,62 @@ namespace Crawler {
                         */
                         //Console.WriteLine("Found Link: " + foundLink);
                         Page foundPage;
-                        using(var ctx = new CrawlerContext()) {
-                            if(!ctx.Pages.Any(x => x.url == foundLink)) {
-                                //try {
-                                ctx.Pages.Add(new Page() { url = foundLink.Trim() });
-                                ctx.SaveChanges();
-                                /*} catch(Exception) {
-                                Console.WriteLine("Broken link: " + foundLink);
-                                continue;
-                            }*/
-                            }
 
-                            foundPage = ctx.Pages.First(x => x.url == foundLink);
-                        }
-                        /*try {
-                            foundPage = ctx.Pages.Single(x => x.url == foundLink);
-                            Console.WriteLine("hurr");
-                            break;
-                        } catch(Exception) {
+
+                        Stopwatch stopwatch = new Stopwatch();
+                        stopwatch.Start();
+
+
+                        using(var tctx = new CrawlerContext()) {
+                            tctx.Configuration.AutoDetectChangesEnabled = false;
                             try {
-                                //foundPage = new Page() { url = foundLink.Trim() };
-
-                                //ctx.Pages.Add(foundPage);
-                                ctx.Pages.Add(new Page() { url = foundLink.Trim() });
-                                ctx.SaveChanges();
-                                //foundPage = ctx.Pages.Last();
+                                foundPage = tctx.Pages.First(x => x.url == foundLink);
                             } catch(Exception) {
-                                Console.WriteLine("Broken link: " + foundLink);
-                                continue;
-                            }
-                        }*/
+                                foundPage = new Page() { url = foundLink.Trim() };
 
-                        /*Page foundPage = new Page() { url = foundLink };
-                        if(!ctx.Pages.Any(x => x.url == foundLink)) {
-                            //linkList.Add(new Page() { url = foundLink });
-                            ctx.Pages.Add(foundPage);
-                            ctx.SaveChanges();
-                            //Console.WriteLine("Found Page: " + foundLink);
-                        } else {
-                            foundPage = ctx.Pages.First(x => x.url == foundLink);
-                            //ctx.Entry(foundPage).GetDatabaseValues();
-                        }*/
-                        using(var ctx = new CrawlerContext()) {
-                            ctx.Links.Add(new Link() {
-                                text = linkText.Trim(),
-                                local = internalLink,
-                                from_id = currentPage.id,
-                                to_id = foundPage.id,
-                            });
-
-                            try {
-                                ctx.SaveChanges();
-                            } catch(Exception e) {
-                                //MessageBox.Show(e.StackTrace);
-                                Console.WriteLine("LinkText: {0} \nlocal: {1} \nfrom_id: {2} \nto_id: {3}",
-                                    linkText.Trim(), internalLink, currentPage.id, foundPage.id);
+                                tctx.Entry(foundPage).State = EntityState.Added;
+                                tctx.SaveChanges();
                             }
                         }
-                    }
-                    //ctx.Pages.AddRange(linkList);
 
-                    //ctx.SaveChanges();
+                        stopwatch.Stop();
+
+                        long lastScan = stopwatch.ElapsedMilliseconds;
+                        BM.Insert(lastScan);
+
+                        Console.WriteLine("Avg link find: " + BM.AverageTime);
+
+
+                        ctx.Set<Link>().Add(new Link() {
+                            text = linkText.Trim(),
+                            local = internalLink,
+                            from_id = currentPage.id,
+                            to_id = foundPage.id
+                        });
+
+                        /*ctx.Links.Add(new Link() {
+                            text = linkText.Trim(),
+                            local = internalLink,
+                            from_id = currentPage.id,
+                            to_id = foundPage.id
+                        });*/
+
+                        if (i % 1000 == 0) {
+                            ctx.SaveChanges();
+                            ctx.Dispose();
+                            ctx = new CrawlerContext();
+                            ctx.Configuration.AutoDetectChangesEnabled = false;
+                        }
+
+                    }
+
+                    ctx.SaveChanges();
+                    ctx.Dispose();
                 }
+                //ctx.Pages.AddRange(linkList);
+
+                //ctx.SaveChanges();
+                
             }
         }
 
@@ -211,6 +215,8 @@ namespace Crawler {
                     while(this.running) {
                         try {
 
+
+                            BenchMarker BM = new BenchMarker(100);
 
                             Stopwatch stopwatch = new Stopwatch();
                             stopwatch.Start();
@@ -237,16 +243,18 @@ namespace Crawler {
                             stopwatch.Stop();
 
                             long lastScan = stopwatch.ElapsedMilliseconds;
-                            timeQueue.Enqueue(lastScan);
+                            BM.Insert(lastScan);
+
+                            /*timeQueue.Enqueue(lastScan);
 
                             if(timeQueue.Count > maxQueueItems)
                                 timeQueue.Dequeue();
 
-                            long averageScanTime = timeQueue.Sum() / timeQueue.Count;
+                            long averageScanTime = timeQueue.Sum() / timeQueue.Count;*/
 
                             Console.WriteLine();
                             Console.WriteLine("Last scan took:\t{0} ms.", lastScan);
-                            Console.WriteLine("Average scan time:\t{0} ms.", averageScanTime);
+                            Console.WriteLine("Average scan time:\t{0} ms.", BM.AverageTime);
                             Console.WriteLine();
 
 
@@ -289,11 +297,11 @@ namespace Crawler {
         }
 
         private void nameBtn_Click(object sender, EventArgs e) {
-            //using(var ctx = new CrawlerContext()) {
-            //    ctx.Pages.Add(new Page() { url = "https://en.wikipedia.org/wiki/Main_Page" });
-            //    //ctx.Pages.Add(new Page() { url = "https://en.wikipedia.org/wiki/Wikipedia:Non-free_content_criteria" });
-            //    ctx.SaveChanges();
-            //}
+            /*using(var ctx = new CrawlerContext()) {
+                ctx.Pages.Add(new Page() { url = "https://en.wikipedia.org/wiki/Main_Page" });
+                //ctx.Pages.Add(new Page() { url = "https://en.wikipedia.org/wiki/Wikipedia:Non-free_content_criteria" });
+                ctx.SaveChanges();
+            }*/
 
             //this.linkList.Add("http://stackoverflow.com/");
             this.Start();
