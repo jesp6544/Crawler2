@@ -203,7 +203,8 @@ namespace Crawler {
         private void crawlLoop() {
             using(var ctx = new CrawlerContext()) {
 
-                long averageScanTime = 0;
+                int maxQueueItems = 100;
+                Queue<long> timeQueue = new Queue<long>();
 
                 //using(var dbContextTransaction = ctx.Database.BeginTransaction()) {
                 try {
@@ -235,13 +236,16 @@ namespace Crawler {
 
                             stopwatch.Stop();
 
-                            long tmp = averageScanTime;
-                            averageScanTime += stopwatch.ElapsedMilliseconds;
-                            if (tmp > 0)
-                                averageScanTime /= 2;
+                            long lastScan = stopwatch.ElapsedMilliseconds;
+                            timeQueue.Enqueue(lastScan);
+
+                            if(timeQueue.Count > maxQueueItems)
+                                timeQueue.Dequeue();
+
+                            long averageScanTime = timeQueue.Sum() / timeQueue.Count;
 
                             Console.WriteLine();
-                            Console.WriteLine("Last scan took:\t{0} ms.", stopwatch.ElapsedMilliseconds);
+                            Console.WriteLine("Last scan took:\t{0} ms.", lastScan);
                             Console.WriteLine("Average scan time:\t{0} ms.", averageScanTime);
                             Console.WriteLine();
 
