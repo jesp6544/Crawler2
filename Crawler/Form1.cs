@@ -26,6 +26,7 @@ namespace Crawler {
 
         public Form1() {
             InitializeComponent();
+            //hello
         }
 
         private List<string> linkList = new List<string>();
