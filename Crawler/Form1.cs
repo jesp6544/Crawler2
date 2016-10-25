@@ -285,11 +285,11 @@ namespace Crawler {
         }
 
         private void nameBtn_Click(object sender, EventArgs e) {
-            using(var ctx = new CrawlerContext()) {
-                ctx.Pages.Add(new Page() { url = "https://en.wikipedia.org/wiki/Main_Page" });
-                //ctx.Pages.Add(new Page() { url = "https://en.wikipedia.org/wiki/Wikipedia:Non-free_content_criteria" });
-                ctx.SaveChanges();
-            }
+            //using(var ctx = new CrawlerContext()) {
+            //    ctx.Pages.Add(new Page() { url = "https://en.wikipedia.org/wiki/Main_Page" });
+            //    //ctx.Pages.Add(new Page() { url = "https://en.wikipedia.org/wiki/Wikipedia:Non-free_content_criteria" });
+            //    ctx.SaveChanges();
+            //}
 
             //this.linkList.Add("http://stackoverflow.com/");
             this.Start();
