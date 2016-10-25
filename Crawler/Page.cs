@@ -14,6 +14,7 @@ public class Page {
     [Key]
     public int id { get; set; }
 
+    [Index(IsUnique = true)]
     [Required]
     public string url { get; set; }
 
