@@ -190,7 +190,7 @@ namespace Crawler {
                             ctx = new CrawlerContext();
                             ctx.Configuration.AutoDetectChangesEnabled = false;
                         }
-
+                        i++;
                     }
 
                     Console.WriteLine("Avg link find: " + BM.AverageTime);
