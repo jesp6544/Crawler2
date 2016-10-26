@@ -113,7 +113,10 @@ namespace Crawler {
 
                     int i = 1;
                     BenchMarker BM = new BenchMarker(100);
-                    foreach(HtmlNode node in linkNodeCollection) {
+                    BenchMarker BMSave = new BenchMarker(100);
+                    Stopwatch stopwatch2 = new Stopwatch();
+                    int entitySaveCount = 50;
+                    foreach (HtmlNode node in linkNodeCollection) {
                         HtmlAttribute att = node.Attributes["href"];
 
                         string foundLink = att.Value;
@@ -184,15 +187,22 @@ namespace Crawler {
                             to_id = foundPage.id
                         });*/
 
-                        if (i % 100 == 0) {
+                        if (i % entitySaveCount == 0) {
+                            stopwatch2.Start();
                             ctx.SaveChanges();
                             ctx.Dispose();
                             ctx = new CrawlerContext();
                             ctx.Configuration.AutoDetectChangesEnabled = false;
+                            BMSave.Insert(stopwatch2.ElapsedMilliseconds);
+                            Console.WriteLine(stopwatch2.ElapsedMilliseconds);
+                            stopwatch2.Reset();
                         }
                         i++;
                     }
-
+                    if (i >= entitySaveCount)
+                    {
+                        Console.WriteLine("avg savechanges time: " + BMSave.AverageTime/entitySaveCount);
+                    }
                     Console.WriteLine("Avg link find: " + BM.AverageTime);
 
                     Stopwatch SW = new Stopwatch();
