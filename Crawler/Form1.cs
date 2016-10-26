@@ -201,7 +201,7 @@ namespace Crawler {
                         ctx.SaveChanges();
                     SW.Stop();
 
-                    Console.WriteLine(SW.ElapsedMilliseconds);
+                    Console.WriteLine("Savechanges time: " + SW.ElapsedMilliseconds);
 
                     ctx.Dispose();
                 }
