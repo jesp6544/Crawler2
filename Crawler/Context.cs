@@ -17,7 +17,7 @@ namespace Crawler {
         public DbSet<Link> Links { get; set; }
 
         //public CrawlerContext() : base("name=CrawlerConnectionString") { //to local DB
-        public CrawlerContext() : base("Server =tcp:indexer.database.windows.net,1433;Initial Catalog = IndexerDB; Persist Security Info=False;User ID = asdfAdmin; Password=GhW-Z4x-v9Q-PNb;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout = 30;")  //to azure DB
+        public CrawlerContext() : base("Server=tcp:indexer.database.windows.net,1433;Initial Catalog=IndexerDB;Persist Security Info=False;User ID=asdfAdmin;Password=GhW-Z4x-v9Q-PNb;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=60;")  //to azure DB
         {
             Database.SetInitializer<CrawlerContext>(new DBInitializer());
         }
@@ -96,12 +96,13 @@ namespace Crawler {
                 throw exception;
             }
         }
-        internal class DBInitializer : DropCreateDatabaseIfModelChanges<CrawlerContext>
+        internal class DBInitializer :  CreateDatabaseIfNotExists<CrawlerContext>
         {
 
             protected override void Seed(CrawlerContext ctx)
             {
-                ctx.Pages.Add(new Page() {url = "https://en.wikipedia.org/wiki/Main_Page"});
+                Page d = new Page() { url = "https://en.wikipedia.org/wiki/Main_Page" };
+                ctx.Entry(d).State = EntityState.Added;
                 base.Seed(ctx);
             }
         }
