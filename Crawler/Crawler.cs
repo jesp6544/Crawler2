@@ -25,7 +25,12 @@ namespace Crawler {
         public int LinkTagCount { get; private set; }
         public int CurrentLinkTagIndex { get; private set; }
 
-        public int LinksCrawled { get; private set; } = 0;
+        public long TotalContentTagsFound { get; private set; }
+        public long TotalLinkTagsFound { get; private set; }
+
+        public int LinksCrawled { get; private set; }
+
+        public int TotalErrors { get; private set; }
 
         public Crawler() {
             this.reset();
@@ -70,6 +75,7 @@ namespace Crawler {
                     }
 
                 } catch(Exception) {
+                    this.TotalErrors++;
                     //Console.WriteLine(e.Message);
                     //Console.WriteLine(e.StackTrace);
                 }
@@ -160,6 +166,7 @@ namespace Crawler {
                             text = content.Trim()
                         });
                 }
+                this.TotalContentTagsFound += i - 1;
             }
 
             return contentList;
@@ -203,6 +210,7 @@ namespace Crawler {
                     });
 
                 }
+                this.TotalLinkTagsFound += i - 1;
 
             }
             return linkList;

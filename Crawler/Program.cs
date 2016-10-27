@@ -9,6 +9,8 @@ namespace Crawler {
 
     internal static class Program {
 
+        private static readonly DateTime startTime = DateTime.Now; 
+
         private static void Main() {
 
             Crawler crawler = new Crawler();
@@ -39,8 +41,16 @@ namespace Crawler {
                             Console.WriteLine();
                             Console.WriteLine("Stats:");
                             Console.WriteLine("Pages crawled:        {0}", crawler.LinksCrawled);
+                            Console.WriteLine("Total links:          {0}", crawler.TotalLinkTagsFound);
+                            Console.WriteLine("Total content tags:   {0}", crawler.TotalContentTagsFound);
                             Console.WriteLine("Average crawl time:   {0}ms", crawler.LoopBenchMarker.AverageTime);
                         }
+
+                        TimeSpan totalRunTime = DateTime.Now.Subtract(Program.startTime);
+                        Console.WriteLine();
+                        Console.WriteLine("Total time run:       {0}", totalRunTime);
+                        Console.WriteLine();
+                        Console.WriteLine("Total errors:         {0}", crawler.TotalErrors);
                     }
                 }
 
