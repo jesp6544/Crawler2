@@ -9,20 +9,23 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Crawler {
-
-    internal class CrawlerContext : DbContext {
+namespace Crawler
+{
+    internal class CrawlerContext : DbContext
+    {
         public DbSet<Page> Pages { get; set; }
         public DbSet<Content> Content { get; set; }
         public DbSet<Link> Links { get; set; }
 
         //public CrawlerContext() : base("name=CrawlerConnectionString") { //to local DB
-        public CrawlerContext() : base("Server=tcp:indexer.database.windows.net,1433;Initial Catalog=IndexerDB;Persist Security Info=False;User ID=asdfAdmin;Password=GhW-Z4x-v9Q-PNb;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=60;")  //to azure DB
+        //public CrawlerContext() : base("Server=tcp:indexer.database.windows.net,1433;Initial Catalog=IndexerDB;Persist Security Info=False;User ID=asdfAdmin;Password=GhW-Z4x-v9Q-PNb;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=60;")  //to azure DB
+        public CrawlerContext() : base("CrawlerConnectionString")
         {
             Database.SetInitializer<CrawlerContext>(new DBInitializer());
         }
 
-        protected override void OnModelCreating(DbModelBuilder modelBuilder) {
+        protected override void OnModelCreating(DbModelBuilder modelBuilder)
+        {
             //modelBuilder.Conventions.Remove<OneToManyCascadeDeleteConvention>();
 
             /*modelBuilder.Entity<Page>()
@@ -78,27 +81,35 @@ namespace Crawler {
                         .WillCascadeOnDelete(false);*/
         }
 
-        public override int SaveChanges() {
-            try {
+        public override int SaveChanges()
+        {
+            try
+            {
                 return base.SaveChanges();
-            } catch(DbEntityValidationException vex) {
-                foreach(var eve in vex.EntityValidationErrors) {
+            }
+            catch (DbEntityValidationException vex)
+            {
+                foreach (var eve in vex.EntityValidationErrors)
+                {
                     Console.WriteLine("Entity of type \"{0}\" in state \"{1}\" has the following validation errors:",
                         eve.Entry.Entity.GetType().Name, eve.Entry.State);
-                    foreach(var ve in eve.ValidationErrors) {
+                    foreach (var ve in eve.ValidationErrors)
+                    {
                         Console.WriteLine("- Property: \"{0}\", Error: \"{1}\"",
                             ve.PropertyName, ve.ErrorMessage);
                     }
                 }
                 throw;
-            } catch(DbUpdateException dbu) {
+            }
+            catch (DbUpdateException dbu)
+            {
                 var exception = HandleDbUpdateException(dbu);
                 throw exception;
             }
         }
-        internal class DBInitializer :  CreateDatabaseIfNotExists<CrawlerContext>
-        {
 
+        internal class DBInitializer : CreateDatabaseIfNotExists<CrawlerContext>
+        {
             protected override void Seed(CrawlerContext ctx)
             {
                 Page d = new Page() { url = "https://en.wikipedia.org/wiki/Main_Page" };
@@ -107,14 +118,19 @@ namespace Crawler {
             }
         }
 
-        private Exception HandleDbUpdateException(DbUpdateException dbu) {
+        private Exception HandleDbUpdateException(DbUpdateException dbu)
+        {
             var builder = new StringBuilder("A DbUpdateException was caught while saving changes. ");
 
-            try {
-                foreach(var result in dbu.Entries) {
+            try
+            {
+                foreach (var result in dbu.Entries)
+                {
                     builder.AppendFormat("Type: {0} was part of the problem. ", result.Entity.GetType().Name);
                 }
-            } catch(Exception e) {
+            }
+            catch (Exception e)
+            {
                 builder.Append("Error parsing DbUpdateException: " + e.ToString());
             }
 
