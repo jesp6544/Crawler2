@@ -21,7 +21,11 @@ namespace Crawler {
         public Page CurrentPage { get; private set; }
 
         public int ContentTagCount { get; private set; }
+        public int CurrentContentTagIndex { get; private set;}
         public int LinkTagCount { get; private set; }
+        public int CurrentLinkTagIndex { get; private set; }
+
+        public int LinksCrawled { get; private set; } = 0;
 
         public Crawler() {
             this.reset();
@@ -69,6 +73,7 @@ namespace Crawler {
                     //Console.WriteLine(e.Message);
                     //Console.WriteLine(e.StackTrace);
                 }
+                this.LinksCrawled++;
                 this.reset();
 
                 stopwatch.Reset();
@@ -84,7 +89,9 @@ namespace Crawler {
             this.ctx.Configuration.AutoDetectChangesEnabled = false;
 
             this.ContentTagCount = 0;
+            this.CurrentContentTagIndex = 0;
             this.LinkTagCount = 0;
+            this.CurrentLinkTagIndex = 0;
             this.CurrentPage = null;
             this.currentHTML = "";
         }
@@ -109,13 +116,13 @@ namespace Crawler {
             this.updateTitle(title);
 
             List<Content> contentList = this.getContent(doc);
+            List<Link> linkList = this.getLinks(currentPage, doc);
 
             foreach(Content c in contentList) {
                 this.ctx.Entry(c).State = EntityState.Added;
             }
             this.ctx.SaveChanges();
 
-            List<Link> linkList = this.getLinks(currentPage, doc);
             foreach(Link l in linkList) {
                 this.ctx.Entry(l).State = EntityState.Added;
             }
@@ -141,7 +148,10 @@ namespace Crawler {
             if(contentNodeCollection != null) {
                 this.ContentTagCount = contentNodeCollection.Count;
 
+                int i = 1;
                 foreach(HtmlNode node in contentNodeCollection) {
+                    this.CurrentContentTagIndex = i;
+
                     string content = node.InnerText.Trim();
                     if(content.Length > 0)
                         contentList.Add(new Content() {
@@ -149,6 +159,7 @@ namespace Crawler {
                             tag = node.OriginalName.Trim(),
                             text = content.Trim()
                         });
+                    i++;
                 }
             }
 
@@ -162,7 +173,11 @@ namespace Crawler {
             HtmlNodeCollection linkNodeCollection = doc.DocumentNode.SelectNodes("//a[@href and text()]");
             if(linkNodeCollection != null) {
                 this.LinkTagCount = linkNodeCollection.Count;
+
+                int i = 1;
                 foreach(HtmlNode node in linkNodeCollection) {
+                    this.CurrentLinkTagIndex = i;
+
                     HtmlAttribute att = node.Attributes["href"];
 
                     string foundLink = att.Value;
@@ -187,7 +202,8 @@ namespace Crawler {
                         from_id = currentPage.id,
                         to_id = this.addOrGetPage(foundLink).id
                     });
-                    
+
+                    i++;
 
                 }
 
