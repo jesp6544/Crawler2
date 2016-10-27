@@ -96,11 +96,10 @@ namespace Crawler {
                 throw exception;
             }
         }
-        internal class DBInitializer :  CreateDatabaseIfNotExists<CrawlerContext>
-        {
 
-            protected override void Seed(CrawlerContext ctx)
-            {
+        internal class DBInitializer : CreateDatabaseIfNotExists<CrawlerContext> {
+
+            protected override void Seed(CrawlerContext ctx) {
                 Page d = new Page() { url = "https://en.wikipedia.org/wiki/Main_Page" };
                 ctx.Entry(d).State = EntityState.Added;
                 base.Seed(ctx);
