@@ -96,7 +96,7 @@ namespace Crawler {
                 throw exception;
             }
         }
-        internal class DBInitializer :  CreateDatabaseIfNotExists<CrawlerContext>
+        internal class DBInitializer :  DropCreateDatabaseIfModelChanges<CrawlerContext>
         {
 
             protected override void Seed(CrawlerContext ctx)

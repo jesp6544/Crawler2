@@ -80,7 +80,7 @@ namespace Crawler {
                 HtmlNodeCollection contentNodeCollection =
                     doc.DocumentNode.SelectNodes("(//h1|//h2|//h3|//h4|//h5|//h6|//p)[text()]");
                 if(contentNodeCollection != null) {
-                    Console.WriteLine("Found {0} content tags", contentNodeCollection.Count);
+                    Console.WriteLine("Found content tags: \t{0}", contentNodeCollection.Count);
                     using(var ctx = new CrawlerContext()) {
                         ctx.Configuration.AutoDetectChangesEnabled = false;
 
@@ -111,8 +111,6 @@ namespace Crawler {
 
                     int i = 1;
                     BenchMarker BM = new BenchMarker(100);
-                    BenchMarker BMSave = new BenchMarker(100);
-                    Stopwatch stopwatch2 = new Stopwatch();
                     int entitySaveCount = 50;
                     foreach(HtmlNode node in linkNodeCollection) {
                         HtmlAttribute att = node.Attributes["href"];
@@ -185,21 +183,15 @@ namespace Crawler {
                         });*/
 
                         if(i % entitySaveCount == 0) {
-                            stopwatch2.Start();
                             ctx.SaveChanges();
                             ctx.Dispose();
                             ctx = new CrawlerContext();
                             ctx.Configuration.AutoDetectChangesEnabled = false;
-                            BMSave.Insert(stopwatch2.ElapsedMilliseconds);
-                            Console.WriteLine(stopwatch2.ElapsedMilliseconds);
-                            stopwatch2.Reset();
                         }
                         i++;
                     }
-                    if(i >= entitySaveCount) {
-                        Console.WriteLine("avg savechanges time: " + BMSave.AverageTime / entitySaveCount);
-                    }
-                    Console.WriteLine("Avg link find: " + BM.AverageTime);
+                    
+                    Console.WriteLine("Avg link find: \t\t {0}ms", BM.AverageTime);
 
                     Stopwatch SW = new Stopwatch();
                     SW.Start();
@@ -207,7 +199,7 @@ namespace Crawler {
                         ctx.SaveChanges();
                     SW.Stop();
 
-                    Console.WriteLine("Savechanges time: " + SW.ElapsedMilliseconds);
+                    Console.WriteLine("Savechanges time: \t {0}ms", SW.ElapsedMilliseconds);
 
                     ctx.Dispose();
                 }
