@@ -48,7 +48,8 @@ namespace Crawler {
 
                         TimeSpan totalRunTime = DateTime.Now.Subtract(Program.startTime);
                         Console.WriteLine();
-                        Console.WriteLine("Total time run:       {0}", totalRunTime);
+                        string totalRunTimeNoMili = totalRunTime.ToString();
+                        Console.WriteLine("Total time run:       {0}", totalRunTimeNoMili.Substring(0,8));
                         Console.WriteLine();
                         Console.WriteLine("Total errors:         {0}", crawler.TotalErrors);
                     }
