@@ -13,10 +13,230 @@ namespace Crawler {
 
     internal class Crawler {
 
-        public static void Start() {
+        private CrawlerContext ctx;
+
+        public readonly BenchMarker LoopBenchMarker = new BenchMarker(100);
+
+        private string currentHTML;
+        public Page CurrentPage { get; private set; }
+
+        public int ContentTagCount { get; private set; }
+        public int LinkTagCount { get; private set; }
+
+        public Crawler() {
+            this.reset();
+        }
+
+        private Page getNextPage() {
+            string query = @"
+                UPDATE TOP (1) Pages
+                SET LastAttempt = GETDATE()
+                OUTPUT
+	                inserted.id,
+	                inserted.url,
+	                inserted.title,
+	                inserted.LastAttempt,
+	                inserted.scanned
+                WHERE
+	                scanned = 0
+	                AND
+	                (DATEDIFF(s, '1970-01-01 00:00:00', LastAttempt) <= DATEDIFF(s, '1970-01-01 00:00:00', GETDATE()) - 60*60 OR LastAttempt IS NULL)";
+            return this.ctx.Pages.SqlQuery(query).Single();
+        }
+
+        public void Start() {
+
+            Stopwatch stopwatch = new Stopwatch();
+            while(true) {
+
+                stopwatch.Start();
+                try {
+
+                    Page page = this.getNextPage();
+                    this.CurrentPage = page;
+
+                    using(DbContextTransaction scope = this.ctx.Database.BeginTransaction()) {
+
+                        this.crawlPage(page);
+
+                        page.scanned = true;
+                        ctx.Entry(page).State = EntityState.Modified;
+                        ctx.SaveChanges();
+                        scope.Commit();
+                    }
+
+                } catch(Exception) {
+                    //Console.WriteLine(e.Message);
+                    //Console.WriteLine(e.StackTrace);
+                }
+                this.reset();
+
+                stopwatch.Reset();
+                this.LoopBenchMarker.Insert(stopwatch.ElapsedMilliseconds);
+
+            }
+        }
+
+        private void reset() {
+            if (this.ctx != null)
+                this.ctx.Dispose();
+            this.ctx = new CrawlerContext();
+            this.ctx.Configuration.AutoDetectChangesEnabled = false;
+
+            this.ContentTagCount = 0;
+            this.LinkTagCount = 0;
+            this.CurrentPage = null;
+            this.currentHTML = "";
+        }
+
+        private void crawlPage(Page currentPage) {
+
+            string HTML;
+            using(var client = new WebClient()) {
+                Uri uri = new Uri(currentPage.url);
+                try {
+                    this.currentHTML = client.DownloadString(uri);
+                    HTML = client.DownloadString(uri);
+                } catch(WebException e) {
+                    return;
+                }
+            }
+            
+            HtmlAgilityPack.HtmlDocument doc = new HtmlAgilityPack.HtmlDocument();
+            doc.LoadHtml(HTML);
+
+            string title = doc.DocumentNode.SelectSingleNode("//title").InnerText;
+            this.updateTitle(title);
+
+            List<Content> contentList = this.getContent(doc);
+
+            foreach(Content c in contentList) {
+                this.ctx.Entry(c).State = EntityState.Added;
+            }
+            this.ctx.SaveChanges();
+
+            List<Link> linkList = this.getLinks(currentPage, doc);
+            foreach(Link l in linkList) {
+                this.ctx.Entry(l).State = EntityState.Added;
+            }
+            this.ctx.SaveChanges();
+
+
+        }
+
+        private void updateTitle(string title) {
+            using(var ctx = new CrawlerContext()) {
+                ctx.Pages.Attach(this.CurrentPage);
+                this.CurrentPage.title = title;
+                //ctx.Entry(this.CurrentPage).State = EntityState.Modified;
+                ctx.SaveChanges();
+            }
+        }
+
+        private List<Content> getContent(HtmlAgilityPack.HtmlDocument doc) {
+
+            List<Content> contentList = new List<Content>();
+
+            HtmlNodeCollection contentNodeCollection = doc.DocumentNode.SelectNodes("(//h1|//h2|//h3|//h4|//h5|//h6|//p)[text()]");
+            if(contentNodeCollection != null) {
+                this.ContentTagCount = contentNodeCollection.Count;
+
+                foreach(HtmlNode node in contentNodeCollection) {
+                    string content = node.InnerText.Trim();
+                    if(content.Length > 0)
+                        contentList.Add(new Content() {
+                            page_id = this.CurrentPage.id,
+                            tag = node.OriginalName.Trim(),
+                            text = content.Trim()
+                        });
+                }
+            }
+
+            return contentList;
+        }
+
+        private List<Link> getLinks(Page currentPage, HtmlAgilityPack.HtmlDocument doc) {
+
+            List<Link> linkList = new List<Link>();
+
+            HtmlNodeCollection linkNodeCollection = doc.DocumentNode.SelectNodes("//a[@href and text()]");
+            if(linkNodeCollection != null) {
+                this.LinkTagCount = linkNodeCollection.Count;
+                foreach(HtmlNode node in linkNodeCollection) {
+                    HtmlAttribute att = node.Attributes["href"];
+
+                    string foundLink = att.Value;
+                    string linkText = node.InnerText.Trim();
+
+                    if(string.IsNullOrEmpty(linkText))
+                        continue;
+
+                    bool internalLink = false;
+                    try {
+                        foundLink = this.fixLink(this.CurrentPage.url, foundLink, ref internalLink);
+                    } catch(Exception e) {
+                        if(e.Message == "Skip.")
+                            continue;
+                        else
+                            throw;
+                    }
+
+                    linkList.Add(new Link() {
+                        text = linkText,
+                        local = internalLink,
+                        from_id = currentPage.id,
+                        to_id = this.addOrGetPage(foundLink).id
+                    });
+                    
+
+                }
+
+            }
+            return linkList;
+        }
+
+        private string fixLink(string currentLink, string foundLink, ref bool internalLink) {
+
+            Uri uri = new Uri(currentLink);
+
+            if(foundLink.StartsWith("//")) {
+                foundLink = uri.Scheme + "://" + foundLink.Substring(2);
+            } else if(foundLink.StartsWith("/")) {
+                // is internal
+                internalLink = true;
+                foundLink = uri.GetLeftPart(UriPartial.Authority) + foundLink;
+            } else if(foundLink.StartsWith("?")) {
+                // is internal
+                internalLink = true;
+                foundLink = uri.GetLeftPart(UriPartial.Path) + foundLink;
+            } else {
+                throw new Exception("Skip.");
+            }
+
+            return foundLink;
+        }
+
+        private Page addOrGetPage(string foundLink) {
+
+            Page foundPage = null;
+
+            using(var tctx = new CrawlerContext()) {
+                tctx.Configuration.AutoDetectChangesEnabled = false;
+                try {
+                    foundPage = tctx.Pages.First(x => x.url == foundLink);
+                } catch(Exception) {
+                    foundPage = new Page() { url = foundLink.Trim() };
+
+                    tctx.Entry(foundPage).State = EntityState.Added;
+                    tctx.SaveChanges();
+                }
+            }
+            return foundPage;
+        }
+
+        public static void oldStart() {
             using(var ctx = new CrawlerContext()) {
                 int maxQueueItems = 100;
-                Queue<long> timeQueue = new Queue<long>();
 
                 BenchMarker BM = new BenchMarker(100);
 
@@ -55,7 +275,7 @@ namespace Crawler {
                                 if(page != null) {
                                     Console.WriteLine("Scanning Page: " + page.url);
 
-                                    Crawler.crawlPage(page);
+                                    Crawler.oldcrawlPage(page);
 
                                     page.scanned = true;
                                     ctx.Entry(page).State = EntityState.Modified;
@@ -124,7 +344,7 @@ namespace Crawler {
             }*/
         }
 
-        private static void crawlPage(Page currentPage) {
+        private static void oldcrawlPage(Page currentPage) {
             using(var client = new WebClient()) {
                 Uri uri = new Uri(currentPage.url);
                 string HTML;
@@ -148,8 +368,7 @@ namespace Crawler {
                     ctx.SaveChanges();
                 }
 
-                HtmlNodeCollection contentNodeCollection =
-                    doc.DocumentNode.SelectNodes("(//h1|//h2|//h3|//h4|//h5|//h6|//p)[text()]");
+                HtmlNodeCollection contentNodeCollection = doc.DocumentNode.SelectNodes("(//h1|//h2|//h3|//h4|//h5|//h6|//p)[text()]");
                 if(contentNodeCollection != null) {
                     Console.WriteLine("Found content tags: \t{0}", contentNodeCollection.Count);
                     using(var ctx = new CrawlerContext()) {
