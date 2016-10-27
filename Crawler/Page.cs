@@ -22,7 +22,7 @@ public class Page {
 
     public string title { get; set; }
 
-    public DateTime LastAttempt { get; set; }
+    public DateTime? LastAttempt { get; set; }
 
     public bool? scanned { get; set; } = false;
 

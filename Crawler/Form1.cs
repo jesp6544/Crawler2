@@ -22,7 +22,9 @@ using System.Windows.Forms.VisualStyles;
 using IsolationLevel = System.Transactions.IsolationLevel;
 
 namespace Crawler {
+
     public partial class Form1 : Form {
+
         public Form1() {
             InitializeComponent();
             //hello
@@ -112,7 +114,7 @@ namespace Crawler {
                     BenchMarker BMSave = new BenchMarker(100);
                     Stopwatch stopwatch2 = new Stopwatch();
                     int entitySaveCount = 50;
-                    foreach (HtmlNode node in linkNodeCollection) {
+                    foreach(HtmlNode node in linkNodeCollection) {
                         HtmlAttribute att = node.Attributes["href"];
 
                         string foundLink = att.Value;
@@ -182,7 +184,7 @@ namespace Crawler {
                             to_id = foundPage.id
                         });*/
 
-                        if (i % entitySaveCount == 0) {
+                        if(i % entitySaveCount == 0) {
                             stopwatch2.Start();
                             ctx.SaveChanges();
                             ctx.Dispose();
@@ -194,9 +196,8 @@ namespace Crawler {
                         }
                         i++;
                     }
-                    if (i >= entitySaveCount)
-                    {
-                        Console.WriteLine("avg savechanges time: " + BMSave.AverageTime/entitySaveCount);
+                    if(i >= entitySaveCount) {
+                        Console.WriteLine("avg savechanges time: " + BMSave.AverageTime / entitySaveCount);
                     }
                     Console.WriteLine("Avg link find: " + BM.AverageTime);
 
