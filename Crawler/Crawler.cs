@@ -150,7 +150,7 @@ namespace Crawler {
 
                 int i = 1;
                 foreach(HtmlNode node in contentNodeCollection) {
-                    this.CurrentContentTagIndex = i;
+                    this.CurrentContentTagIndex = i++;
 
                     string content = node.InnerText.Trim();
                     if(content.Length > 0)
@@ -159,7 +159,6 @@ namespace Crawler {
                             tag = node.OriginalName.Trim(),
                             text = content.Trim()
                         });
-                    i++;
                 }
             }
 
@@ -176,7 +175,7 @@ namespace Crawler {
 
                 int i = 1;
                 foreach(HtmlNode node in linkNodeCollection) {
-                    this.CurrentLinkTagIndex = i;
+                    this.CurrentLinkTagIndex = i++;
 
                     HtmlAttribute att = node.Attributes["href"];
 
@@ -202,8 +201,6 @@ namespace Crawler {
                         from_id = currentPage.id,
                         to_id = this.addOrGetPage(foundLink).id
                     });
-
-                    i++;
 
                 }
 
