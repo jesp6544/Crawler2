@@ -60,9 +60,9 @@ namespace Crawler {
                 try {
                     HTML = client.DownloadString(uri);
                 } catch(WebException e) {
-                    Console.WriteLine(e.StackTrace);
-                    //return;
-                    throw;
+                    //Console.WriteLine(e.StackTrace);
+                    return;
+                    //throw;
                 }
 
                 HtmlAgilityPack.HtmlDocument doc = new HtmlAgilityPack.HtmlDocument();
@@ -82,7 +82,6 @@ namespace Crawler {
                 if(contentNodeCollection != null) {
                     Console.WriteLine("Found {0} content tags", contentNodeCollection.Count);
                     using(var ctx = new CrawlerContext()) {
-
                         ctx.Configuration.AutoDetectChangesEnabled = false;
 
                         foreach(HtmlNode node in contentNodeCollection) {
@@ -110,14 +109,16 @@ namespace Crawler {
                     CrawlerContext ctx = new CrawlerContext();
                     ctx.Configuration.AutoDetectChangesEnabled = false;
 
-
                     int i = 1;
                     BenchMarker BM = new BenchMarker(100);
                     foreach(HtmlNode node in linkNodeCollection) {
                         HtmlAttribute att = node.Attributes["href"];
 
                         string foundLink = att.Value;
-                        string linkText = node.InnerText;
+                        string linkText = node.InnerText.Trim();
+
+                        if(string.IsNullOrEmpty(linkText))
+                            continue;
 
                         bool internalLink = false;
 
@@ -146,10 +147,8 @@ namespace Crawler {
                         //Console.WriteLine("Found Link: " + foundLink);
                         Page foundPage;
 
-
                         Stopwatch stopwatch = new Stopwatch();
                         stopwatch.Start();
-
 
                         using(var tctx = new CrawlerContext()) {
                             tctx.Configuration.AutoDetectChangesEnabled = false;
@@ -168,10 +167,8 @@ namespace Crawler {
                         long lastScan = stopwatch.ElapsedMilliseconds;
                         BM.Insert(lastScan);
 
-
-
                         ctx.Set<Link>().Add(new Link() {
-                            text = linkText.Trim(),
+                            text = linkText,
                             local = internalLink,
                             from_id = currentPage.id,
                             to_id = foundPage.id
@@ -184,20 +181,19 @@ namespace Crawler {
                             to_id = foundPage.id
                         });*/
 
-                        if (i % 100 == 0) {
+                        if(i % 100 == 0) {
                             ctx.SaveChanges();
                             ctx.Dispose();
                             ctx = new CrawlerContext();
                             ctx.Configuration.AutoDetectChangesEnabled = false;
                         }
-
                     }
 
                     Console.WriteLine("Avg link find: " + BM.AverageTime);
 
                     Stopwatch SW = new Stopwatch();
                     SW.Start();
-                    if (ctx.ChangeTracker.HasChanges())
+                    if(ctx.ChangeTracker.HasChanges())
                         ctx.SaveChanges();
                     SW.Stop();
 
@@ -208,13 +204,11 @@ namespace Crawler {
                 //ctx.Pages.AddRange(linkList);
 
                 //ctx.SaveChanges();
-                
             }
         }
 
         private void crawlLoop() {
             using(var ctx = new CrawlerContext()) {
-
                 int maxQueueItems = 100;
                 Queue<long> timeQueue = new Queue<long>();
 
@@ -223,16 +217,20 @@ namespace Crawler {
                 //using(var dbContextTransaction = ctx.Database.BeginTransaction()) {
                 try {
                     while(this.running) {
+                        //ctx.Database.ExecuteSqlCommand("BEGIN TRAN");
+
                         try {
-
-
-
                             Stopwatch stopwatch = new Stopwatch();
                             stopwatch.Start();
 
+                            //using(var scope = new TransactionScope(TransactionScopeOption.Required,
+                            //    new TransactionOptions() { IsolationLevel = IsolationLevel.RepeatableRead })) {
+                            //using(DbContextTransaction scope = ctx.Database.BeginTransaction())
 
-                            using(var scope = new TransactionScope(TransactionScopeOption.Required,
-                                new TransactionOptions() { IsolationLevel = IsolationLevel.ReadCommitted })) {
+                            {
+                                //Page page = ctx.Pages.SqlQuery("SELECT TOP 1 * FROM Pages WITH (HOLDLOCK, ROWLOCK) WHERE scanned = 0").Single();
+                                //ctx.Database.ExecuteSqlCommand("SELECT TOP 1 * FROM Pages WITH (TABLOCKX, HOLDLOCK) WHERE scanned = 0");
+
                                 Page page = ctx.Pages.First(x => x.scanned == false);
                                 if(page != null) {
                                     Console.WriteLine("Scanning Page: " + page.url);
@@ -242,7 +240,9 @@ namespace Crawler {
                                     page.scanned = true;
                                     ctx.Entry(page).State = EntityState.Modified;
                                     ctx.SaveChanges();
-                                    scope.Complete();
+                                    //ctx.Database.ExecuteSqlCommand("COMMIT TRAN");
+                                    //scope.Commit();
+                                    //scope.Complete();
                                 } else {
                                     Thread.Sleep(1000);
                                     Console.WriteLine("No more links to scan.");
@@ -265,9 +265,8 @@ namespace Crawler {
                             Console.WriteLine("Last scan took:\t{0} ms.", lastScan);
                             Console.WriteLine("Average scan time:\t{0} ms.", BM.AverageTime);
                             Console.WriteLine();
-
-
                         } catch(Exception e) {
+                            //ctx.Database.ExecuteSqlCommand("ROLLBACK TRAN");
                             Console.WriteLine(e.Message);
                             Console.WriteLine(e.StackTrace);
                             //throw;
