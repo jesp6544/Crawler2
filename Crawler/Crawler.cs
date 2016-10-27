@@ -50,9 +50,9 @@ namespace Crawler {
 
         public void Start() {
 
-            Stopwatch stopwatch = new Stopwatch();
             while(true) {
 
+                Stopwatch stopwatch = new Stopwatch();
                 stopwatch.Start();
                 try {
 
@@ -76,7 +76,7 @@ namespace Crawler {
                 this.LinksCrawled++;
                 this.reset();
 
-                stopwatch.Reset();
+                stopwatch.Stop();
                 this.LoopBenchMarker.Insert(stopwatch.ElapsedMilliseconds);
 
             }
