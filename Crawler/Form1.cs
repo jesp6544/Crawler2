@@ -227,21 +227,34 @@ namespace Crawler {
                 //using(var dbContextTransaction = ctx.Database.BeginTransaction()) {
                 try {
                     while(this.running) {
-                        //ctx.Database.ExecuteSqlCommand("BEGIN TRAN");
-
                         try {
+                            string query = @"
+                                UPDATE TOP (1) Pages
+                                SET LastAttempt = GETDATE()
+                                OUTPUT
+	                                inserted.id,
+	                                inserted.url,
+	                                inserted.title,
+	                                inserted.LastAttempt,
+	                                inserted.scanned
+                                WHERE
+	                                scanned = 0
+	                                AND
+	                                (DATEDIFF(s, '1970-01-01 00:00:00', LastAttempt) <= DATEDIFF(s, '1970-01-01 00:00:00', GETDATE()) - 60*60 OR LastAttempt IS NULL)";
+                            Page page = ctx.Pages.SqlQuery(query).Single();
+
+                            //ctx.Database.ExecuteSqlCommand("BEGIN TRAN");
+
                             Stopwatch stopwatch = new Stopwatch();
                             stopwatch.Start();
 
                             //using(var scope = new TransactionScope(TransactionScopeOption.Required,
                             //    new TransactionOptions() { IsolationLevel = IsolationLevel.RepeatableRead })) {
-                            //using(DbContextTransaction scope = ctx.Database.BeginTransaction())
-
-                            {
+                            using(DbContextTransaction scope = ctx.Database.BeginTransaction()) {
                                 //Page page = ctx.Pages.SqlQuery("SELECT TOP 1 * FROM Pages WITH (HOLDLOCK, ROWLOCK) WHERE scanned = 0").Single();
                                 //ctx.Database.ExecuteSqlCommand("SELECT TOP 1 * FROM Pages WITH (TABLOCKX, HOLDLOCK) WHERE scanned = 0");
 
-                                Page page = ctx.Pages.First(x => x.scanned == false);
+                                //Page page = ctx.Pages.First(x => x.scanned == false);
                                 if(page != null) {
                                     Console.WriteLine("Scanning Page: " + page.url);
 
@@ -251,7 +264,7 @@ namespace Crawler {
                                     ctx.Entry(page).State = EntityState.Modified;
                                     ctx.SaveChanges();
                                     //ctx.Database.ExecuteSqlCommand("COMMIT TRAN");
-                                    //scope.Commit();
+                                    scope.Commit();
                                     //scope.Complete();
                                 } else {
                                     Thread.Sleep(1000);
