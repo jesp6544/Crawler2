@@ -54,14 +54,14 @@ namespace Crawler {
         }
 
         public void Start() {
-
+            Page page = new Page();
             while(true) {
 
                 Stopwatch stopwatch = new Stopwatch();
                 stopwatch.Start();
                 try {
 
-                    Page page = this.getNextPage();
+                    page = this.getNextPage();
                     this.CurrentPage = page;
 
                     using(DbContextTransaction scope = this.ctx.Database.BeginTransaction()) {
@@ -74,7 +74,10 @@ namespace Crawler {
                         scope.Commit();
                     }
 
-                } catch(Exception) {
+                } catch(Exception e) {
+                    Error error = new Error() { error = e.Message + "\n" + e.StackTrace, Page = this.CurrentPage};
+                    ctx.Entry(error).State = EntityState.Added;
+                    ctx.SaveChanges();
                     this.TotalErrors++;
                     //Console.WriteLine(e.Message);
                     //Console.WriteLine(e.StackTrace);
