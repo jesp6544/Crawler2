@@ -17,7 +17,7 @@ namespace Crawler
         public DbSet<Content> Content { get; set; }
         public DbSet<Link> Links { get; set; }
 
-        public CrawlerContext() : base("Server=tcp:indexer.database.windows.net,1433;Initial Catalog=IndexerDB;Persist Security Info=False;User ID=asdfAdmin;Password=GhW-Z4x-v9Q-PNb;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=60;")  //to azure DB
+        public CrawlerContext() : base("name=CrawlerConnectionString")  //to azure DB
         {
             Database.SetInitializer<CrawlerContext>(new DBInitializer());
         }
