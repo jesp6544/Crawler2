@@ -136,8 +136,9 @@ namespace Crawler {
                 this.ctx.Entry(l).State = EntityState.Added;
             }
             this.ctx.SaveChanges();
-
-
+            
+            this.TotalContentTagsFound += contentList.Count;
+            this.TotalLinkTagsFound += linkList.Count;
         }
 
         private void updateTitle(string title) {
@@ -162,14 +163,33 @@ namespace Crawler {
                     this.CurrentContentTagIndex = i++;
 
                     string content = node.InnerText.Trim();
-                    if(content.Length > 0)
+
+                    if (content.Length > 0) { 
+                        int index = 0;
+                        do {
+
+                            int offset = content.Substring(index, 800).LastIndexOf(' ');
+
+                            string tmpContent = content.Substring(index, offset);
+                            contentList.Add(new Content() {
+                                page_id = this.CurrentPage.id,
+                                tag = node.OriginalName.Trim(),
+                                text = tmpContent
+                            });
+
+                            index += offset;
+
+                        } while(content.Length < index && content.Length > 800);
+                    }
+
+                    /*if(content.Length > 0)
                         contentList.Add(new Content() {
                             page_id = this.CurrentPage.id,
                             tag = node.OriginalName.Trim(),
-                            text = content.Trim()
+                            text = content
                         });
+                    */
                 }
-                this.TotalContentTagsFound += i - 1;
             }
 
             return contentList;
@@ -213,7 +233,6 @@ namespace Crawler {
                     });
 
                 }
-                this.TotalLinkTagsFound += i - 1;
 
             }
             return linkList;
