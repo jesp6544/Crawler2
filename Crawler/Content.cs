@@ -18,6 +18,7 @@ public class Content {
     public string tag { get; set; }
 
     [Required]
+    [MaxLength(800)]
     public string text { get; set; }
 
     public int page_id { get; set; }

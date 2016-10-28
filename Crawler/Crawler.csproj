@@ -102,6 +102,10 @@
     <Compile Include="Migrations\201610280841040_testtest.Designer.cs">
       <DependentUpon>201610280841040_testtest.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201610280912421_Content-fix.cs" />
+    <Compile Include="Migrations\201610280912421_Content-fix.Designer.cs">
+      <DependentUpon>201610280912421_Content-fix.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Page.cs" />
     <Compile Include="Program.cs" />
@@ -117,6 +121,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201610280841040_testtest.resx">
       <DependentUpon>201610280841040_testtest.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201610280912421_Content-fix.resx">
+      <DependentUpon>201610280912421_Content-fix.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
