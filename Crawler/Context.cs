@@ -16,6 +16,7 @@ namespace Crawler
         public DbSet<Page> Pages { get; set; }
         public DbSet<Content> Content { get; set; }
         public DbSet<Link> Links { get; set; }
+        public DbSet<Error> Errors { get; set; }
 
         public CrawlerContext() : base("name=CrawlerConnectionString")  //to azure DB
         {
