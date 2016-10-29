@@ -73,6 +73,8 @@ namespace Crawler {
                     } catch(Exception e) {
                         scope.Rollback();
 
+                        this.reset();
+
                         Error error = new Error() { error = e.Message + "\n" + e.StackTrace, Page = this.CurrentPage};
                         ctx.Entry(error).State = EntityState.Added;
                         ctx.SaveChanges();
