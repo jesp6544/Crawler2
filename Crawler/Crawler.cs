@@ -54,33 +54,32 @@ namespace Crawler {
         }
 
         public void Start() {
-            Page page = new Page();
             while(true) {
 
                 Stopwatch stopwatch = new Stopwatch();
                 stopwatch.Start();
-                try {
+                using(DbContextTransaction scope = this.ctx.Database.BeginTransaction()) {
+                    try {
+                        this.CurrentPage = this.getNextPage();
 
-                    page = this.getNextPage();
-                    this.CurrentPage = page;
+                        this.crawlPage(this.CurrentPage);
 
-                    using(DbContextTransaction scope = this.ctx.Database.BeginTransaction()) {
-
-                        this.crawlPage(page);
-
-                        page.scanned = true;
-                        ctx.Entry(page).State = EntityState.Modified;
+                        this.CurrentPage.scanned = true;
+                        ctx.Entry(this.CurrentPage).State = EntityState.Modified;
                         ctx.SaveChanges();
-                        scope.Commit();
-                    }
 
-                } catch(Exception e) {
-                    Error error = new Error() { error = e.Message + "\n" + e.StackTrace, Page = this.CurrentPage};
-                    ctx.Entry(error).State = EntityState.Added;
-                    ctx.SaveChanges();
-                    this.TotalErrors++;
-                    //Console.WriteLine(e.Message);
-                    //Console.WriteLine(e.StackTrace);
+                        scope.Commit();
+
+                    } catch(Exception e) {
+                        scope.Rollback();
+
+                        Error error = new Error() { error = e.Message + "\n" + e.StackTrace, Page = this.CurrentPage};
+                        ctx.Entry(error).State = EntityState.Added;
+                        ctx.SaveChanges();
+                        this.TotalErrors++;
+                        //Console.WriteLine(e.Message);
+                        //Console.WriteLine(e.StackTrace);
+                    }
                 }
                 this.LinksCrawled++;
                 this.reset();
