@@ -58,10 +58,10 @@ namespace Crawler {
 
                 Stopwatch stopwatch = new Stopwatch();
                 stopwatch.Start();
-                using(DbContextTransaction scope = this.ctx.Database.BeginTransaction()) {
-                    try {
-                        this.CurrentPage = this.getNextPage();
+                try {
+                    this.CurrentPage = this.getNextPage();
 
+                    using(DbContextTransaction scope = this.ctx.Database.BeginTransaction()) {
                         this.crawlPage(this.CurrentPage);
 
                         this.CurrentPage.scanned = true;
@@ -69,10 +69,9 @@ namespace Crawler {
                         ctx.SaveChanges();
 
                         scope.Commit();
+                    }
 
-                    } catch(Exception e) {
-                        scope.Rollback();
-
+                } catch(Exception e) {
                         this.reset();
 
                         Error error = new Error() { error = e.Message + "\n" + e.StackTrace, Page = this.CurrentPage};
@@ -82,7 +81,6 @@ namespace Crawler {
                         //Console.WriteLine(e.Message);
                         //Console.WriteLine(e.StackTrace);
                     }
-                }
                 this.LinksCrawled++;
                 this.reset();
 
