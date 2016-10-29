@@ -168,7 +168,12 @@ namespace Crawler {
                         int index = 0;
                         do {
 
-                            int offset = content.Substring(index, 800).LastIndexOf(' ');
+                            int max = 800;
+                            int len = (content.Length - index) % max;
+
+                            int offset = len;
+                            if(!(len < max))
+                                offset = content.Substring(index, len).LastIndexOf(' ');
 
                             string tmpContent = content.Substring(index, offset);
                             contentList.Add(new Content() {
