@@ -16,7 +16,7 @@ namespace Crawler
         public readonly BenchMarker LoopBenchMarker = new BenchMarker(100);
 
         private string currentHTML;
-        public Page CurrentPage { get; private set; }
+        public Page CurrentPage { get; set; }
 
         public int ContentTagCount { get; private set; }
         public int CurrentContentTagIndex { get; private set; }

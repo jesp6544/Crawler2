@@ -7,7 +7,7 @@ namespace Tests
     [TestFixture]
     public class UnitTestCrawler
     {
-        [Test, Description("Testing connectivity to the database.")]
+        [Test, Description("Testing connectivity to database.")]
         public void DatabaseConnectionTest() // TODO
         {
             var ctx = new CrawlerContext();
@@ -18,19 +18,19 @@ namespace Tests
             Assert.IsNotNull(ctx.Pages);
         }
 
-        [Test]
-        public void InitializeCrawlerTest() // Real tests begin!
+        [Test, Description("Initialize Crawler object.")]
+        public void InitializeCrawlerTest()
         {
             var crawler = new Crawler.Crawler();
             Assert.IsNotNull(crawler);
         }
 
-        [Test]
+        [Test, Description("Retrieving next page from database.")]
         public void GetNextPageTest()
         {
             var crawler = new Crawler.Crawler();
-            crawler.GetNextPage();
-            Assert.IsNotNull(crawler.CurrentPage); // TODO: Never passes
+            crawler.CurrentPage = crawler.GetNextPage();
+            Assert.IsNotNull(crawler.CurrentPage); // TODO: Never passes, for unknown reason
         }
     }
 }
