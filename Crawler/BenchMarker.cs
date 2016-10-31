@@ -5,11 +5,10 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Crawler {
-    class BenchMarker {
 
-
-        int maxQueueItems = 100;
-        Queue<long> timeQueue = new Queue<long>();
+    internal class BenchMarker {
+        private int maxQueueItems = 100;
+        private Queue<long> timeQueue = new Queue<long>();
 
         public BenchMarker(int maxItems) {
             this.maxQueueItems = maxItems;
@@ -22,11 +21,16 @@ namespace Crawler {
                 timeQueue.Dequeue();
         }
 
-        public long AverageTime {
-            get {
-                return timeQueue.Sum() / timeQueue.Count;
+        public long AverageTime
+        {
+            get
+            {
+                try {
+                    return timeQueue.Sum() / timeQueue.Count;
+                } catch(Exception) {
+                    return 0;
+                }
             }
         }
-
     }
 }

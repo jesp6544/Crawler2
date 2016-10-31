@@ -82,12 +82,11 @@ namespace Crawler {
                     stopwatch.Stop();
                     this.LoopBenchMarker.Insert(stopwatch.ElapsedMilliseconds);
                 } catch(Exception e) {
-                    if(this.ctx != null)
-                        this.ctx.Dispose();
-                    this.ctx = new CrawlerContext();
-                    this.ctx.Configuration.AutoDetectChangesEnabled = false;
+                    int pageID = this.CurrentPage.id;
 
-                    Error error = new Error() { error = e.Message + "\n" + e.StackTrace, Page = this.CurrentPage };
+                    this.reset();
+
+                    Error error = new Error() { error = e.Message + "\n" + e.StackTrace, Page_id = pageID };
                     ctx.Entry(error).State = EntityState.Added;
                     ctx.SaveChanges();
                     this.TotalErrors++;

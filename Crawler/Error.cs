@@ -6,11 +6,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Crawler
-{
-    class Error
-    {
-        public Error(){
+namespace Crawler {
+
+    internal class Error {
+
+        public Error() {
         }
 
         [Key]
@@ -20,6 +20,9 @@ namespace Crawler
 
         public DateTime time { get; set; } = DateTime.Now;
 
+        [ForeignKey("Page_id")]
         public Page Page { get; set; }
+
+        public virtual int? Page_id { get; set; }
     }
 }
