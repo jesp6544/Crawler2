@@ -8,7 +8,7 @@ namespace Tests
     public class UnitTestCrawler
     {
         [Test, Description("Testing connectivity to database.")]
-        public void DatabaseConnectionTest() // TODO
+        public void DatabaseConnectionTest()
         {
             var ctx = new CrawlerContext();
             Assert.IsNotNull(ctx.Database);
@@ -30,7 +30,7 @@ namespace Tests
         {
             var crawler = new Crawler.Crawler();
             crawler.CurrentPage = crawler.GetNextPage();
-            Assert.IsNotNull(crawler.CurrentPage); // TODO: Never passes, for unknown reason
+            Assert.IsNotNull(crawler.CurrentPage);
         }
     }
 }
