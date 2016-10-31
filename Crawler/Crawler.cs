@@ -12,7 +12,6 @@ using System.Threading.Tasks;
 namespace Crawler {
 
     internal class Crawler {
-
         private CrawlerContext ctx;
 
         public readonly BenchMarker LoopBenchMarker = new BenchMarker(100);
@@ -21,7 +20,7 @@ namespace Crawler {
         public Page CurrentPage { get; private set; }
 
         public int ContentTagCount { get; private set; }
-        public int CurrentContentTagIndex { get; private set;}
+        public int CurrentContentTagIndex { get; private set; }
         public int LinkTagCount { get; private set; }
         public int CurrentLinkTagIndex { get; private set; }
 
@@ -41,23 +40,32 @@ namespace Crawler {
                 UPDATE TOP (1) Pages
                 SET LastAttempt = GETDATE()
                 OUTPUT
-	                inserted.id,
-	                inserted.url,
-	                inserted.title,
-	                inserted.LastAttempt,
-	                inserted.scanned
+                    inserted.id,
+                    inserted.url,
+                    inserted.title,
+                    inserted.LastAttempt,
+                    inserted.scanned
+                FROM Pages
+                LEFT JOIN (
+	                SELECT Errors.Page_id, COUNT(Errors.id) AS ErrorCount
+	                FROM Errors
+	                GROUP BY Page_id
+                ) AS E ON E.Page_id = Pages.id
+
                 WHERE
-	                scanned = 0
-	                AND
-	                (DATEDIFF(s, '1970-01-01 00:00:00', LastAttempt) <= DATEDIFF(s, '1970-01-01 00:00:00', GETDATE()) - 60*60 OR LastAttempt IS NULL)";
+                    Pages.scanned = 0
+                    AND
+                    (DATEDIFF(s, '1970-01-01 00:00:00', LastAttempt) <= DATEDIFF(s, '1970-01-01 00:00:00', GETDATE()) - 60*60 OR LastAttempt IS NULL)
+                    AND (E.ErrorCount < 3 OR E.ErrorCount IS NULL)
+                ";
             return this.ctx.Pages.SqlQuery(query).Single();
         }
 
         public void Start() {
             while(true) {
-
                 Stopwatch stopwatch = new Stopwatch();
                 stopwatch.Start();
+
                 try {
                     this.CurrentPage = this.getNextPage();
 
@@ -70,28 +78,29 @@ namespace Crawler {
 
                         scope.Commit();
                     }
-
                 } catch(Exception e) {
-                        this.reset();
+                    if(this.ctx != null)
+                        this.ctx.Dispose();
+                    this.ctx = new CrawlerContext();
+                    this.ctx.Configuration.AutoDetectChangesEnabled = false;
 
-                        Error error = new Error() { error = e.Message + "\n" + e.StackTrace, Page = this.CurrentPage};
-                        ctx.Entry(error).State = EntityState.Added;
-                        ctx.SaveChanges();
-                        this.TotalErrors++;
-                        //Console.WriteLine(e.Message);
-                        //Console.WriteLine(e.StackTrace);
-                    }
+                    Error error = new Error() { error = e.Message + "\n" + e.StackTrace, Page = this.CurrentPage };
+                    ctx.Entry(error).State = EntityState.Added;
+                    ctx.SaveChanges();
+                    this.TotalErrors++;
+                    //Console.WriteLine(e.Message);
+                    //Console.WriteLine(e.StackTrace);
+                }
                 this.LinksCrawled++;
                 this.reset();
 
                 stopwatch.Stop();
                 this.LoopBenchMarker.Insert(stopwatch.ElapsedMilliseconds);
-
             }
         }
 
         private void reset() {
-            if (this.ctx != null)
+            if(this.ctx != null)
                 this.ctx.Dispose();
             this.ctx = new CrawlerContext();
             this.ctx.Configuration.AutoDetectChangesEnabled = false;
@@ -105,7 +114,6 @@ namespace Crawler {
         }
 
         private void crawlPage(Page currentPage) {
-
             string HTML;
             using(var client = new WebClient()) {
                 Uri uri = new Uri(currentPage.url);
@@ -116,7 +124,7 @@ namespace Crawler {
                     return;
                 }
             }
-            
+
             HtmlAgilityPack.HtmlDocument doc = new HtmlAgilityPack.HtmlDocument();
             doc.LoadHtml(HTML);
 
@@ -135,7 +143,7 @@ namespace Crawler {
                 this.ctx.Entry(l).State = EntityState.Added;
             }
             this.ctx.SaveChanges();
-            
+
             this.TotalContentTagsFound += contentList.Count;
             this.TotalLinkTagsFound += linkList.Count;
         }
@@ -150,7 +158,6 @@ namespace Crawler {
         }
 
         private List<Content> getContent(HtmlAgilityPack.HtmlDocument doc) {
-
             List<Content> contentList = new List<Content>();
 
             HtmlNodeCollection contentNodeCollection = doc.DocumentNode.SelectNodes("(//h1|//h2|//h3|//h4|//h5|//h6|//p)[text()]");
@@ -163,10 +170,9 @@ namespace Crawler {
 
                     string content = node.InnerText.Trim();
 
-                    if (content.Length > 0) { 
+                    if(content.Length > 0) {
                         int index = 0;
                         do {
-
                             int max = 800;
                             int len = (content.Length - index) % max;
 
@@ -182,7 +188,6 @@ namespace Crawler {
                             });
 
                             index += offset;
-
                         } while(content.Length < index && content.Length > 800);
                     }
 
@@ -200,7 +205,6 @@ namespace Crawler {
         }
 
         private List<Link> getLinks(Page currentPage, HtmlAgilityPack.HtmlDocument doc) {
-
             List<Link> linkList = new List<Link>();
 
             HtmlNodeCollection linkNodeCollection = doc.DocumentNode.SelectNodes("//a[@href and text()]");
@@ -235,15 +239,12 @@ namespace Crawler {
                         from_id = currentPage.id,
                         to_id = this.addOrGetPage(foundLink).id
                     });
-
                 }
-
             }
             return linkList;
         }
 
         private string fixLink(string currentLink, string foundLink, ref bool internalLink) {
-
             Uri uri = new Uri(currentLink);
 
             if(foundLink.StartsWith("//")) {
@@ -264,7 +265,6 @@ namespace Crawler {
         }
 
         private Page addOrGetPage(string foundLink) {
-
             Page foundPage = null;
 
             using(var tctx = new CrawlerContext()) {
@@ -272,7 +272,7 @@ namespace Crawler {
                 try {
                     foundPage = tctx.Pages.First(x => x.url == foundLink);
                 } catch(Exception) {
-                    foundPage = new Page() { url = foundLink.Trim() };
+                    foundPage = new Page() { url = foundLink.Trim(), LastAttempt = null };
 
                     tctx.Entry(foundPage).State = EntityState.Added;
                     tctx.SaveChanges();
