@@ -5,14 +5,17 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace Crawler {
-
-    internal static class Program {
+namespace Crawler
+{
+    internal static class Program
+    {
         private static readonly DateTime startTime = DateTime.Now;
 
-        private static void Main() {
+        private static void Main()
+        {
             Crawler crawler = new Crawler();
-            Thread renderThread = new Thread(() => {
+            Thread renderThread = new Thread(() =>
+            {
                 Program.render(crawler);
             });
             renderThread.Start();
@@ -20,20 +23,29 @@ namespace Crawler {
             crawler.Start();
         }
 
-        private static void render(Crawler crawler) {
-            while(true) {
+        private static void render(Crawler crawler)
+        {
+            while (true)
+            {
                 Console.Clear();
 
-                if(crawler == null) {
+                if (crawler == null)
+                {
                     Console.WriteLine("Starting...");
-                } else {
-                    if(crawler.CurrentPage == null) {
+                }
+                else
+                {
+                    if (crawler.CurrentPage == null)
+                    {
                         Console.WriteLine("Finding next link...");
-                    } else {
+                    }
+                    else
+                    {
                         Console.WriteLine("Scanning:             {0}", crawler.CurrentPage.url);
                         Console.WriteLine("content tags:         {0}/{1}", crawler.CurrentContentTagIndex, crawler.ContentTagCount);
                         Console.WriteLine("link tags:            {0}/{1}", crawler.CurrentLinkTagIndex, crawler.LinkTagCount);
-                        if(crawler.LinksCrawled > 0) {
+                        if (crawler.LinksCrawled > 0)
+                        {
                             Console.WriteLine();
                             Console.WriteLine("Stats:");
                             Console.WriteLine("Pages crawled:        {0}", crawler.LinksCrawled);

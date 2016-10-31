@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Crawler
 {
-    internal class CrawlerContext : DbContext
+    public class CrawlerContext : DbContext
     {
         public DbSet<Page> Pages { get; set; }
         public DbSet<Content> Content { get; set; }

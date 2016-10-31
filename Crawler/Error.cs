@@ -6,11 +6,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Crawler {
-
-    internal class Error {
-
-        public Error() {
+namespace Crawler
+{
+    public class Error
+    {
+        public Error()
+        {
         }
 
         [Key]
