@@ -78,6 +78,9 @@ namespace Crawler {
 
                         scope.Commit();
                     }
+
+                    stopwatch.Stop();
+                    this.LoopBenchMarker.Insert(stopwatch.ElapsedMilliseconds);
                 } catch(Exception e) {
                     if(this.ctx != null)
                         this.ctx.Dispose();
@@ -93,9 +96,6 @@ namespace Crawler {
                 }
                 this.LinksCrawled++;
                 this.reset();
-
-                stopwatch.Stop();
-                this.LoopBenchMarker.Insert(stopwatch.ElapsedMilliseconds);
             }
         }
 
