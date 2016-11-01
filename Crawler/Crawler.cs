@@ -13,8 +13,6 @@ namespace Crawler {
         private CrawlerContext ctx;
 
         public readonly BenchMarker LoopBenchMarker = new BenchMarker(100);
-        public readonly BenchMarker OldBenchMarker = new BenchMarker(500);
-        public readonly BenchMarker NewBenchMarker = new BenchMarker(500);
 
         private string currentHTML;
         public Page CurrentPage { get; set; }

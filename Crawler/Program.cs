@@ -48,9 +48,6 @@ namespace Crawler {
                         Console.WriteLine("Total time run:       {0}", totalRunTime.ToString("d':'hh':'mm':'ss"));
                         Console.WriteLine();
                         Console.WriteLine("Total errors:         {0}", crawler.TotalErrors);
-                        Console.WriteLine();
-                        Console.WriteLine("OldBM:                {0}", crawler.OldBenchMarker.AverageTime);
-                        Console.WriteLine("NewBM:                {0}", crawler.NewBenchMarker.AverageTime);
                     }
                 }
 
