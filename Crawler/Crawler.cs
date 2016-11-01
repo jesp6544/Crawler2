@@ -260,6 +260,10 @@ namespace Crawler {
                 throw new Exception("Skip.");
             }
 
+            if(foundLink.Contains('#')) {
+                foundLink = foundLink.Substring(0, foundLink.IndexOf('#'));
+            }
+
             return foundLink;
         }
 
