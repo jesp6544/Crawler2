@@ -13,6 +13,8 @@ namespace Crawler {
         private CrawlerContext ctx;
 
         public readonly BenchMarker LoopBenchMarker = new BenchMarker(100);
+        public readonly BenchMarker OldBenchMarker = new BenchMarker(500);
+        public readonly BenchMarker NewBenchMarker = new BenchMarker(500);
 
         private string currentHTML;
         public Page CurrentPage { get; set; }
@@ -262,6 +264,21 @@ namespace Crawler {
         }
 
         private Page addOrGetPage(string foundLink) {
+            return this.ctx.Pages.SqlQuery(string.Format(@"
+                    declare @url varchar(500) = '{0}';
+
+                    IF NOT EXISTS (SELECT * FROM Pages WHERE (url = @url))
+                    BEGIN
+                        INSERT INTO Pages(url, scanned)
+	                    OUTPUT inserted.*
+                        Values(@url, 0)
+                    END
+                    ELSE
+                    BEGIN
+	                    SELECT TOP 1 * FROM Pages WHERE url = @url
+                    END
+                ", foundLink)).Single();
+
             Page foundPage = null;
 
             using(var tctx = new CrawlerContext()) {
@@ -275,6 +292,7 @@ namespace Crawler {
                     tctx.SaveChanges();
                 }
             }
+
             return foundPage;
         }
 
