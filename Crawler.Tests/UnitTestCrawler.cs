@@ -1,8 +1,6 @@
-﻿using Crawler;
-using NUnit.Framework;
-using System;
+﻿using NUnit.Framework;
 
-namespace Tests
+namespace Crawler.Tests
 {
     [TestFixture]
     public class UnitTestCrawler
@@ -21,14 +19,14 @@ namespace Tests
         [Test, Description("Initialize Crawler object.")]
         public void InitializeCrawlerTest()
         {
-            var crawler = new Crawler.Crawler();
+            var crawler = new Crawler();
             Assert.IsNotNull(crawler);
         }
 
         [Test, Description("Retrieving next page from database.")]
         public void GetNextPageTest()
         {
-            var crawler = new Crawler.Crawler();
+            var crawler = new Crawler();
             crawler.CurrentPage = crawler.GetNextPage();
             Assert.IsNotNull(crawler.CurrentPage);
         }
