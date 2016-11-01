@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Owin;
+﻿using Microsoft.Owin;
 using Owin;
 
-[assembly: OwinStartup(typeof(CrawlerMVC.Startup))]
-
+[assembly: OwinStartupAttribute(typeof(CrawlerMVC.Startup))]
 namespace CrawlerMVC
 {
     public partial class Startup
