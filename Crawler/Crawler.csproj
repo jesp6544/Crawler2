@@ -89,6 +89,7 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
+    <Compile Include="Image.cs" />
     <Compile Include="Link.cs" />
     <Compile Include="Migrations\201610280829052_test.cs" />
     <Compile Include="Migrations\201610280829052_test.Designer.cs">
@@ -109,6 +110,14 @@
     <Compile Include="Migrations\201610311138343_Page_id.cs" />
     <Compile Include="Migrations\201610311138343_Page_id.Designer.cs">
       <DependentUpon>201610311138343_Page_id.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201611030956476_Images.cs" />
+    <Compile Include="Migrations\201611030956476_Images.Designer.cs">
+      <DependentUpon>201611030956476_Images.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201611030958490_ImagesFix.cs" />
+    <Compile Include="Migrations\201611030958490_ImagesFix.Designer.cs">
+      <DependentUpon>201611030958490_ImagesFix.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Page.cs" />
@@ -131,6 +140,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201610311138343_Page_id.resx">
       <DependentUpon>201610311138343_Page_id.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201611030956476_Images.resx">
+      <DependentUpon>201611030956476_Images.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201611030958490_ImagesFix.resx">
+      <DependentUpon>201611030958490_ImagesFix.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

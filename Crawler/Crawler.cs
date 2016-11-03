@@ -269,7 +269,7 @@ namespace Crawler {
             return this.ctx.Pages.SqlQuery(string.Format(@"
                     declare @url varchar(500) = '{0}';
 
-                    IF NOT EXISTS (SELECT * FROM Pages WHERE (url = @url))
+                    IF NOT EXISTS (SELECT TOP 1 * FROM Pages WHERE (url = @url))
                     BEGIN
                         INSERT INTO Pages(url, scanned)
 	                    OUTPUT inserted.*
