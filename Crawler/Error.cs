@@ -24,6 +24,7 @@ namespace Crawler
         [ForeignKey("Page_id")]
         public Page Page { get; set; }
 
+        [Index]
         public virtual int? Page_id { get; set; }
     }
 }

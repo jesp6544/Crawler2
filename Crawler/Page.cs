@@ -6,9 +6,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-public class Page {
-
-    public Page() {
+public class Page
+{
+    public Page()
+    {
     }
 
     [Key]
@@ -22,8 +23,10 @@ public class Page {
 
     public string title { get; set; }
 
+    [Index("IX_AttemptAndScanned", 2)]
     public DateTime? LastAttempt { get; set; }
 
+    [Index("IX_AttemptAndScanned", 1)]
     public bool? scanned { get; set; } = false;
 
     public ICollection<Content> content { get; set; }

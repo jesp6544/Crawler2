@@ -119,6 +119,10 @@
     <Compile Include="Migrations\201611030958490_ImagesFix.Designer.cs">
       <DependentUpon>201611030958490_ImagesFix.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201611031551018_added-indexes.cs" />
+    <Compile Include="Migrations\201611031551018_added-indexes.Designer.cs">
+      <DependentUpon>201611031551018_added-indexes.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Page.cs" />
     <Compile Include="Program.cs" />
@@ -146,6 +150,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201611030958490_ImagesFix.resx">
       <DependentUpon>201611030958490_ImagesFix.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201611031551018_added-indexes.resx">
+      <DependentUpon>201611031551018_added-indexes.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
