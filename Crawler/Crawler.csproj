@@ -79,18 +79,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BenchMarker.cs" />
-    <Compile Include="Content.cs" />
-    <Compile Include="Context.cs" />
     <Compile Include="Crawler.cs" />
-    <Compile Include="Error.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
-    <Compile Include="Image.cs" />
-    <Compile Include="Link.cs" />
     <Compile Include="Migrations\201610280829052_test.cs" />
     <Compile Include="Migrations\201610280829052_test.Designer.cs">
       <DependentUpon>201610280829052_test.cs</DependentUpon>
@@ -124,7 +119,6 @@
       <DependentUpon>201611031551018_added-indexes.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
-    <Compile Include="Page.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Form1.resx">
@@ -196,6 +190,12 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="config\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CrawlerLibrary\CrawlerLibrary.csproj">
+      <Project>{fa24925c-c3e1-46ad-ad82-dbbe60d630e9}</Project>
+      <Name>CrawlerLibrary</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

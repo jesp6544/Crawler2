@@ -1,3 +1,5 @@
+using CrawlerLibrary.Models;
+
 namespace Crawler.Migrations
 {
     using System;
@@ -10,6 +12,7 @@ namespace Crawler.Migrations
         public Configuration()
         {
             AutomaticMigrationsEnabled = false;
+            this.CommandTimeout = 60 * 5;
         }
 
         protected override void Seed(CrawlerContext context)

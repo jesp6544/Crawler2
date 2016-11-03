@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Threading;
+using CrawlerLibrary.Models;
 
 namespace Crawler {
 

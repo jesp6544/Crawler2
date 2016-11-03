@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using CrawlerLibrary.Models;
+using NUnit.Framework;
 
 namespace Crawler.Tests
 {

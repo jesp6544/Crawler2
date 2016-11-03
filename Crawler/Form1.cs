@@ -19,6 +19,7 @@ using System.Threading.Tasks;
 using System.Transactions;
 using System.Windows.Forms;
 using System.Windows.Forms.VisualStyles;
+using CrawlerLibrary.Models;
 using IsolationLevel = System.Transactions.IsolationLevel;
 
 namespace Crawler {

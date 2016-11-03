@@ -88,9 +88,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Crawler\Crawler.csproj">
-      <Project>{ed2ce55c-fa00-4c5a-9db9-d4e03735ab0f}</Project>
-      <Name>Crawler</Name>
+    <ProjectReference Include="..\CrawlerLibrary\CrawlerLibrary.csproj">
+      <Project>{fa24925c-c3e1-46ad-ad82-dbbe60d630e9}</Project>
+      <Name>CrawlerLibrary</Name>
     </ProjectReference>
   </ItemGroup>
   <Choose>
