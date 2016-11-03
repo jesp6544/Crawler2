@@ -6,11 +6,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-public class Link {
-
-    public Link() {
+public class Link
+{
+    public Link()
+    {
     }
-
 
     [Key]
     public int id { get; set; }
@@ -24,11 +24,13 @@ public class Link {
     //[Required]
     public virtual int? from_id { get; set; }
 
+    [Index("IX_from_id", 1)]
     [ForeignKey("from_id")]
     public Page from { get; set; }
 
     public virtual int? to_id { get; set; }
 
+    [Index("IX_from_id", 2)]
     [ForeignKey("to_id")]
     public Page to { get; set; }
 

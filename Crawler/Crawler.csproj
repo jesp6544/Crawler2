@@ -123,6 +123,10 @@
     <Compile Include="Migrations\201611031551018_added-indexes.Designer.cs">
       <DependentUpon>201611031551018_added-indexes.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201611031618541_more-indexes.cs" />
+    <Compile Include="Migrations\201611031618541_more-indexes.Designer.cs">
+      <DependentUpon>201611031618541_more-indexes.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Page.cs" />
     <Compile Include="Program.cs" />
@@ -153,6 +157,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201611031551018_added-indexes.resx">
       <DependentUpon>201611031551018_added-indexes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201611031618541_more-indexes.resx">
+      <DependentUpon>201611031618541_more-indexes.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
