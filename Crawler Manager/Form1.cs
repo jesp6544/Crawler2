@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Text;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -27,6 +28,12 @@ namespace Crawler_Manager
             proccThread.Start();;
         }
 
+        private void Download()
+        {
+            WebClient webClient = new WebClient();
+            webClient.DownloadFile(new Uri("Our hosting/dll.dll"), @"dll.dll");
+            //Continue when file finished
+        }
         private void LookForUpdate()
         {
             int timer = 1000*60;
@@ -34,9 +41,9 @@ namespace Crawler_Manager
             {
                 /*
                 if(Some code to check for new dll){
-                Some code to download new dll
                 Shutdown();
-                //Some code to replace dll
+                //delete old dll
+                Download();
                 GoBtn_Click(null,null);}
                 Thread.Sleep(timer);
                 */
@@ -45,7 +52,7 @@ namespace Crawler_Manager
 
         private void ProccKeeper()
         {
-            while (true)  //Enable when working
+            while (true)
             {
                 try
                 {
@@ -53,7 +60,7 @@ namespace Crawler_Manager
                     {
                         if (procc.HasExited)
                         {
-                            LogTxtBox.Text = LogTxtBox.Text +"\n A process has shutdown with error code: "+ procc.ExitCode;
+                            LogTxtBox.Text = LogTxtBox.Text +"A process has shutdown with error code: "+ procc.ExitCode + Environment.NewLine;
                             running.Remove(procc);
                             StartProcesses(1 + running.Count);
                         }
@@ -82,7 +89,7 @@ namespace Crawler_Manager
                     }
                     catch (Exception)
                     {
-                        LogTxtBox.Text = LogTxtBox.Text + "\n Error in closure of processes";
+                        LogTxtBox.Text = LogTxtBox.Text + "Error in closure of processes" + Environment.NewLine;
                     }
                     
                 }
@@ -100,13 +107,13 @@ namespace Crawler_Manager
                     for (int i = 0; i < toStart; i++)
                     {
                         //ProcessStartInfo start = new ProcessStartInfo() { = "C:\Users\Post\Source\Repos\Crawler2\Crawler\bin\Release"};
-                        Process procc = Process.Start(@"C:\Users\Post\Source\Repos\Crawler2\Crawler\bin\Release\Crawler.exe");
+                        Process procc = Process.Start(@"Crawler.exe");
                         running.Add(procc);
                     }
                 }
                 catch (Exception)
                 {
-                    LogTxtBox.Text = LogTxtBox.Text + "\t Failed to start all processes";
+                    LogTxtBox.Text = LogTxtBox.Text  + " Failed to start all processes" + Environment.NewLine;
                 }
             else if (num <= 0)
                 Shutdown(running.Count);
@@ -120,7 +127,7 @@ namespace Crawler_Manager
             }
             catch (Exception)
             {
-                LogTxtBox.Text = "Please insert a positiv number";
+                LogTxtBox.Text = "Please insert a positiv number" + Environment.NewLine;
             }
             
         }
@@ -128,6 +135,11 @@ namespace Crawler_Manager
         private void button1_Click(object sender, EventArgs e)
         {
             ProccKeeper();
+        }
+
+        private void Form1_FormClosed(object sender, FormClosedEventArgs e)
+        {
+
         }
     }
 }
