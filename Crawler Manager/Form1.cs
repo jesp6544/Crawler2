@@ -21,14 +21,14 @@ namespace Crawler_Manager
         public Form1()
         {
             InitializeComponent();
-            //LookForUpdate();
-            //ProccKeeper();
+            Thread updateThread = new Thread(LookForUpdate);
+            Thread proccThread = new Thread(ProccKeeper);
         }
 
         private void LookForUpdate()
         {
             int timer = 1000*60;
-            while (false)  //true to enable
+            while (false) //true to enable
             {
                 /*
                 if(Some code to check for new dll){
@@ -43,57 +43,81 @@ namespace Crawler_Manager
 
         private void ProccKeeper()
         {
-            while (true)
+            while (false)  //Enable when working
             {
-                if (running.Count() >0)
+                try
                 {
-                    foreach (Process procc in running)
+                    if (running.First().Threads != null)
                     {
-                        if (procc.HasExited == true)
+                        foreach (Process procc in running)
                         {
-                            //Remove this procc from running
-                            StartProcesses(1);
+                            if (procc.HasExited == true)
+                            {
+                                LogTxtBox.Text = LogTxtBox.Text + procc.StandardError;
+                                //Remove this procc from running
+                                StartProcesses(1);
+                            }
                         }
                     }
                 }
+                catch (Exception)
+                {
+                    Thread.Sleep(1000*10);
+                }
+
                 Thread.Sleep(1000*60);
             }
         }
 
-        private void Shutdown()
+        private void Shutdown(int num)
         {
             foreach (Process procc in running)
             {
-                procc.Kill();
+                if (num > 0)
+                {
+                    try
+                    {
+                        procc.CloseMainWindow();
+                        num--;
+                        running.Remove(procc);
+                    }
+                    catch (Exception)
+                    {
+                        LogTxtBox.Text = LogTxtBox.Text + "\n Error in closure of processes";
+                    }
+                    
+                }
             }
         }
 
         private void StartProcesses(int num)
         {
-            if (num >= 1 || num != running.Count)
+            if (num > 0 && num != running.Count)
                 try
                 {
-                    Shutdown();
-                    for (int i = 0; i < num; i++)
+                    if (num <running.Count)
+                    Shutdown(running.Count - num);
+                    int toStart = num - running.Count;
+                    for (int i = 0; i < toStart; i++)
                     {
-                        ProcessStartInfo start = new ProcessStartInfo() {FileName = "Crawler.exe"};
-                        Process procc = Process.Start(start);
+                        //ProcessStartInfo start = new ProcessStartInfo() { = "C:\Users\Post\Source\Repos\Crawler2\Crawler\bin\Release"};
+                        Process procc = Process.Start(@"Crawler.exe");
                         running.Add(procc);
                     }
                 }
                 catch (Exception)
                 {
-                    LogTxtBox.Text = LogTxtBox.Text + "Failed to start all processes";
+                    LogTxtBox.Text = LogTxtBox.Text + "\n Failed to start all processes";
                 }
-            if (num <= 0)
-                Shutdown();
+            else if (num <= 0)
+                Shutdown(running.Count);
         }
 
         private void GoBtn_Click(object sender, EventArgs e)
         {
             try
             {
-                StartProcesses(Int32.Parse(NumTxtBox.Text));
+               StartProcesses(int.Parse(NumTxtBox.Text));
             }
             catch (Exception)
             {

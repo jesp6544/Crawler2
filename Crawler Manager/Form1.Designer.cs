@@ -41,7 +41,7 @@
             this.GoBtn.Name = "GoBtn";
             this.GoBtn.Size = new System.Drawing.Size(75, 23);
             this.GoBtn.TabIndex = 0;
-            this.GoBtn.Text = "button1";
+            this.GoBtn.Text = "Start";
             this.GoBtn.UseVisualStyleBackColor = true;
             this.GoBtn.Click += new System.EventHandler(this.GoBtn_Click);
             // 
