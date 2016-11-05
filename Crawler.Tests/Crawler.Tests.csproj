@@ -92,6 +92,10 @@
       <Project>{fa24925c-c3e1-46ad-ad82-dbbe60d630e9}</Project>
       <Name>CrawlerLibrary</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Crawler\Crawler.csproj">
+      <Project>{ed2ce55c-fa00-4c5a-9db9-d4e03735ab0f}</Project>
+      <Name>Crawler</Name>
+    </ProjectReference>
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
