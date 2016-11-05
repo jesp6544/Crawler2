@@ -21,14 +21,14 @@ namespace Crawler_Manager
         public Form1()
         {
             InitializeComponent();
-            LookForUpdate();
-            ProccKeeper();
+            //LookForUpdate();
+            //ProccKeeper();
         }
 
         private void LookForUpdate()
         {
             int timer = 1000*60;
-            while (true)
+            while (false)  //true to enable
             {
                 /*
                 if(Some code to check for new dll){
@@ -45,12 +45,15 @@ namespace Crawler_Manager
         {
             while (true)
             {
-                foreach (Process procc in running)
+                if (running.Count() >0)
                 {
-                    if (procc.HasExited == true)
+                    foreach (Process procc in running)
                     {
-                        //Remove this procc from running
-                        StartProcesses(1);
+                        if (procc.HasExited == true)
+                        {
+                            //Remove this procc from running
+                            StartProcesses(1);
+                        }
                     }
                 }
                 Thread.Sleep(1000*60);
