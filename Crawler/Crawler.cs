@@ -12,6 +12,7 @@ namespace Crawler {
 
     public class Crawler {
         private CrawlerContext ctx;
+        
 
         public readonly BenchMarker LoopBenchMarker = new BenchMarker(100);
 
@@ -61,6 +62,7 @@ namespace Crawler {
         }
 
         public void Start() {
+            
             while(true) {
                 Stopwatch stopwatch = new Stopwatch();
                 stopwatch.Start();
