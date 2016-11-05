@@ -23,6 +23,8 @@ namespace Crawler_Manager
             InitializeComponent();
             Thread updateThread = new Thread(LookForUpdate);
             Thread proccThread = new Thread(ProccKeeper);
+            updateThread.Start();
+            proccThread.Start();;
         }
 
         private void LookForUpdate()
@@ -43,20 +45,17 @@ namespace Crawler_Manager
 
         private void ProccKeeper()
         {
-            while (false)  //Enable when working
+            while (true)  //Enable when working
             {
                 try
                 {
-                    if (running.First().Threads != null)
+                    foreach (Process procc in running)
                     {
-                        foreach (Process procc in running)
+                        if (procc.HasExited)
                         {
-                            if (procc.HasExited == true)
-                            {
-                                LogTxtBox.Text = LogTxtBox.Text + procc.StandardError;
-                                //Remove this procc from running
-                                StartProcesses(1);
-                            }
+                            LogTxtBox.Text = LogTxtBox.Text +"\n A process has shutdown with error code: "+ procc.ExitCode;
+                            running.Remove(procc);
+                            StartProcesses(1 + running.Count);
                         }
                     }
                 }
@@ -65,7 +64,7 @@ namespace Crawler_Manager
                     Thread.Sleep(1000*10);
                 }
 
-                Thread.Sleep(1000*60);
+                Thread.Sleep(1000*10);
             }
         }
 
@@ -101,13 +100,13 @@ namespace Crawler_Manager
                     for (int i = 0; i < toStart; i++)
                     {
                         //ProcessStartInfo start = new ProcessStartInfo() { = "C:\Users\Post\Source\Repos\Crawler2\Crawler\bin\Release"};
-                        Process procc = Process.Start(@"Crawler.exe");
+                        Process procc = Process.Start(@"C:\Users\Post\Source\Repos\Crawler2\Crawler\bin\Release\Crawler.exe");
                         running.Add(procc);
                     }
                 }
                 catch (Exception)
                 {
-                    LogTxtBox.Text = LogTxtBox.Text + "\n Failed to start all processes";
+                    LogTxtBox.Text = LogTxtBox.Text + "\t Failed to start all processes";
                 }
             else if (num <= 0)
                 Shutdown(running.Count);
@@ -124,6 +123,11 @@ namespace Crawler_Manager
                 LogTxtBox.Text = "Please insert a positiv number";
             }
             
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            ProccKeeper();
         }
     }
 }
