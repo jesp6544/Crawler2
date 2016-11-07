@@ -18,14 +18,17 @@ namespace Crawler_Manager
     {
         int number = 0;
         List<Process> running = new List<Process>();
+        Thread updateThread;
+        Thread proccThread;
 
         public Form1()
         {
+            updateThread = new Thread(LookForUpdate);
+            proccThread = new Thread(ProccWatcher);
             InitializeComponent();
-            Thread updateThread = new Thread(LookForUpdate);
-            Thread proccThread = new Thread(ProccKeeper);
             updateThread.Start();
-            proccThread.Start();;
+            proccThread.Start();
+            ;
         }
 
         private void Download()
@@ -34,6 +37,7 @@ namespace Crawler_Manager
             webClient.DownloadFile(new Uri("Our hosting/dll.dll"), @"dll.dll");
             //Continue when file finished
         }
+
         private void LookForUpdate()
         {
             int timer = 1000*60;
@@ -50,28 +54,35 @@ namespace Crawler_Manager
             }
         }
 
-        private void ProccKeeper()
+        private void ProccWatcher()
         {
             while (true)
             {
                 try
                 {
+                    int cpu = 0;
+                    long mem = 0;
                     foreach (Process procc in running)
                     {
-                        if (procc.HasExited)
+                        mem += (procc.WorkingSet64/1024/1024);
+                        //LogTxtBox.Text += (procc.WorkingSet64 / 1024) + Environment.NewLine;
+                        MemLabel.Text = mem.ToString();
+                        if (procc.HasExited || procc.ExitCode != 0 || !procc.Responding) //
                         {
-                            LogTxtBox.Text = LogTxtBox.Text +"A process has shutdown with error code: "+ procc.ExitCode + Environment.NewLine;
+                            LogTxtBox.Text += "A process has shutdown with error code: " + procc.ExitCode + Environment.NewLine;
                             running.Remove(procc);
+                            if (!procc.HasExited)
+                            procc.Kill();
                             StartProcesses(1 + running.Count);
+                            //cpu += procc.tot
                         }
                     }
-                }
-                catch (Exception)
-                {
-                    Thread.Sleep(1000*10);
-                }
 
-                Thread.Sleep(1000*10);
+                }
+                catch (Exception e)
+                {
+                }
+                Thread.Sleep(1000);
             }
         }
 
@@ -91,7 +102,7 @@ namespace Crawler_Manager
                     {
                         LogTxtBox.Text = LogTxtBox.Text + "Error in closure of processes" + Environment.NewLine;
                     }
-                    
+
                 }
             }
         }
@@ -101,8 +112,8 @@ namespace Crawler_Manager
             if (num > 0 && num != running.Count)
                 try
                 {
-                    if (num <running.Count)
-                    Shutdown(running.Count - num);
+                    if (num < running.Count)
+                        Shutdown(running.Count - num);
                     int toStart = num - running.Count;
                     for (int i = 0; i < toStart; i++)
                     {
@@ -113,7 +124,7 @@ namespace Crawler_Manager
                 }
                 catch (Exception)
                 {
-                    LogTxtBox.Text = LogTxtBox.Text  + " Failed to start all processes" + Environment.NewLine;
+                    LogTxtBox.Text = LogTxtBox.Text + " Failed to start all processes" + Environment.NewLine;
                 }
             else if (num <= 0)
                 Shutdown(running.Count);
@@ -123,23 +134,31 @@ namespace Crawler_Manager
         {
             try
             {
-               StartProcesses(int.Parse(NumTxtBox.Text));
+                StartProcesses(int.Parse(NumTxtBox.Text));
             }
             catch (Exception)
             {
                 LogTxtBox.Text = "Please insert a positiv number" + Environment.NewLine;
             }
-            
+
         }
 
-        private void button1_Click(object sender, EventArgs e)
-        {
-            ProccKeeper();
-        }
 
-        private void Form1_FormClosed(object sender, FormClosedEventArgs e)
-        {
 
+        private void Form1_Closing(object sender, FormClosingEventArgs e)
+        {
+            updateThread.Abort();
+            proccThread.Abort();
+            foreach (Process procc in running)
+            {
+                try
+                {
+                    procc.Kill();
+                }
+                catch (Exception)
+                {
+                }
+            }
         }
     }
 }
