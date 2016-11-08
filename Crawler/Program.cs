@@ -11,6 +11,12 @@ namespace Crawler {
         private static readonly DateTime startTime = DateTime.Now;
 
         private static void Main() {
+            AppDomain.CurrentDomain.UnhandledException += delegate (object sender, UnhandledExceptionEventArgs args) {
+                Exception e = (Exception)args.ExceptionObject;
+                Console.WriteLine("Unhandled exception: " + e);
+                Environment.Exit(1);
+            };
+
             Crawler crawler = new Crawler();
             Thread renderThread = new Thread(() => {
                 Program.render(crawler);
