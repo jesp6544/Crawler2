@@ -47,7 +47,7 @@ namespace Crawler {
                         string totalRunTimeNoMili = totalRunTime.ToString();
                         Console.WriteLine("Total time run:       {0}", totalRunTime.ToString("d':'hh':'mm':'ss"));
                         Console.WriteLine();
-                        Console.WriteLine("Total errors:         {0}", crawler.TotalErrors);
+                        Console.Write("Total errors:         {0}", crawler.TotalErrors);
                     }
                 }
 
