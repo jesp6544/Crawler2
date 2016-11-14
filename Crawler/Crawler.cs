@@ -277,8 +277,7 @@ namespace Crawler {
                     IF NOT EXISTS (SELECT TOP 1 * FROM Pages WHERE (url = @url))
                     BEGIN
                         INSERT INTO Pages(url, scanned)
-	                    OUTPUT inserted.*
-                        Values(@url, 0)
+	                    Values(@url, 0)
                     END
                 ", foundLink));
             }
