@@ -27,7 +27,7 @@ namespace Crawler_Manager
 
         public Form1()
         {
-            updateThread = new Thread(LookForUpdate);
+            updateThread = new Thread(Updater);
             proccThread = new Thread(ProccWatcher);
             InitializeComponent();
             screenX = Screen.PrimaryScreen.Bounds.Width;
@@ -37,6 +37,11 @@ namespace Crawler_Manager
 
         }
 
+        public Form1(int count) : this()
+        {
+            StartProcesses(count);
+        }
+
         private void Download()
         {
             WebClient webClient = new WebClient();
@@ -44,38 +49,42 @@ namespace Crawler_Manager
             //Continue when file finished
         }
 
-        private void LookForUpdate()
+        private void Updater()
         {
             int timer = 1000*60;
             while (false) //true to enable
             {
-                /*
-                if(Some code to check for new dll){
-                Shutdown();
+                if(LookForUpdate()){
+                Shutdown(running.Count);
                 //delete old dll
                 Download();
                 GoBtn_Click(null,null);}
                 Thread.Sleep(timer);
-                */
             }
+        }
+
+        private bool LookForUpdate()
+        {
+            //return true if update found
+            return false;
         }
 
         private void ScreenOrder()
         {
             int windowHeight = 255;
-                int yMax = screenY / windowHeight ;
-                screenXCount =  running.Count / yMax + 1;
+            int yMax = screenY/windowHeight;
+            screenXCount = running.Count/yMax + 1;
             int i = 0;
             foreach (Process procc in running)
             {
-                MoveWindow(procc.MainWindowHandle, 
-                    (i / yMax) * (screenX / screenXCount), 
-                    (i % yMax) * windowHeight, 
-                    screenX / screenXCount, 
+                MoveWindow(procc.MainWindowHandle,
+                    (i/yMax)*(screenX/screenXCount),
+                    (i%yMax)*windowHeight,
+                    screenX/screenXCount,
                     windowHeight, true);
                 i++;
             }
-            
+
         }
 
         private void ProccWatcher()
@@ -86,36 +95,32 @@ namespace Crawler_Manager
                 {
                     int cpu = 0;
                     long mem = 0;
-                    ScreenOrder();
                     int i = 0;
                     foreach (Process procc in running)
                     {
-                        procc.Refresh();
-                        mem += (procc.PrivateMemorySize64/1024/1024);
-                        //LogTxtBox.Text += (procc.WorkingSet64 / 1024) + Environment.NewLine;
-                        if (procc.HasExited || !procc.Responding) //|| procc.ExitCode != 0
+                        try
                         {
-                            try
-                            {
-                                LogTxtBox.Text += "A process has shutdown with error code: " + procc.ExitCode + Environment.NewLine;
-
-                            }
-                            catch (Exception)
-                            {
-                            }
-                            //running.Remove(procc);
-                            if (!procc.HasExited)
-                            procc.Kill();
-                            StartProcesses(1 + running.Count);
-                            //cpu += procc.tot
+                            if (!(procc.ExitCode != 0))
+                                continue;
                         }
+                        catch (Exception) { }
+
+                        if (!procc.HasExited && procc.Responding)
+                            continue;
+
+                        LogTxtBox.Text += "A process has shutdown with error code"+ Environment.NewLine;
+                        running.Remove(procc);
+                        if (!procc.HasExited)
+                            procc.Kill();
+                        StartProcesses(1 + running.Count);
+                        procc.Refresh();
+                        mem += (procc.PrivateMemorySize64 / 1024 / 1024);
                     }
                     MemLabel.Text = mem.ToString();
-
+                    ScreenOrder();
                 }
                 catch (Exception e)
                 {
-                    //LogTxtBox.Text += "fuck";
                 }
                 Thread.Sleep(1000*2);
             }
@@ -198,6 +203,11 @@ namespace Crawler_Manager
                 {
                 }
             }
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }

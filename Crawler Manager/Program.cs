@@ -12,11 +12,26 @@ namespace Crawler_Manager
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
-        static void Main()
+        static void Main(string[] Args)
         {
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1());
+            if (Args.Length>=1)
+            try
+            {
+                if (int.Parse(Args.First()) > 0)
+                {
+                    Application.Run(new Form1(int.Parse(Args.First())));
+                    //MessageBox.Show("Run cmd line here");
+                }
+            }
+            catch (Exception) { }
+            
+            else
+            {
+                Application.Run(new Form1());
+            }
         }
     }
 }
