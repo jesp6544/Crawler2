@@ -1,4 +1,5 @@
-﻿using HtmlAgilityPack;
+﻿using CrawlerLibrary.Models;
+using HtmlAgilityPack;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
@@ -6,13 +7,12 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Threading;
-using CrawlerLibrary.Models;
+using System.Windows.Forms;
 
 namespace Crawler {
 
     public class Crawler {
         private CrawlerContext ctx;
-        
 
         public readonly BenchMarker LoopBenchMarker = new BenchMarker(100);
 
@@ -62,7 +62,6 @@ namespace Crawler {
         }
 
         public void Start() {
-            
             while(true) {
                 Stopwatch stopwatch = new Stopwatch();
                 stopwatch.Start();
@@ -233,12 +232,14 @@ namespace Crawler {
                             throw;
                     }
 
-                    linkList.Add(new Link() {
+                    this.addOrGetPage(foundLink);
+
+                    /*linkList.Add(new Link() {
                         text = linkText,
                         local = internalLink,
                         from_id = currentPage.id,
                         to_id = this.addOrGetPage(foundLink).id
-                    });
+                    });*/
                 }
             }
             return linkList;
@@ -269,6 +270,20 @@ namespace Crawler {
         }
 
         private Page addOrGetPage(string foundLink) {
+            using(var c = new CrawlerContext()) {
+                c.Database.ExecuteSqlCommandAsync(string.Format(@"
+                    declare @url varchar(500) = '{0}';
+
+                    IF NOT EXISTS (SELECT TOP 1 * FROM Pages WHERE (url = @url))
+                    BEGIN
+                        INSERT INTO Pages(url, scanned)
+	                    OUTPUT inserted.*
+                        Values(@url, 0)
+                    END
+                ", foundLink));
+            }
+            return new Page();
+
             return this.ctx.Pages.SqlQuery(string.Format(@"
                     declare @url varchar(500) = '{0}';
 

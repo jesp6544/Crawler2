@@ -14,8 +14,10 @@ namespace Crawler_Manager {
         /// </summary>
         [STAThread]
         private static void Main(string[] Args) {
+            MessageBox.Show("\"" + Application.ExecutablePath + "\" 5");
+
             RegistryKey rkApp = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\RunOnce", true);
-            rkApp.SetValue("Krawler Manager", "\"" + Application.ExecutablePath + "\" 5");
+            rkApp.SetValue("Krawler Manager", "\"" + Application.ExecutablePath + "\" %5", RegistryValueKind.String);
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
@@ -26,8 +28,8 @@ namespace Crawler_Manager {
                         //MessageBox.Show("Run cmd line here");
                     }
                 } catch(Exception) { } else {
-                Application.Run(new Form1());
             }
+            Application.Run(new Form1());
         }
     }
 }
