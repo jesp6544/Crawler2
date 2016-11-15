@@ -185,6 +185,19 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201611141417400_InitialCreate.cs" />
+    <Compile Include="Migrations\201611141417400_InitialCreate.Designer.cs">
+      <DependentUpon>201611141417400_InitialCreate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201611141718229_add-table-SlaveControl.cs" />
+    <Compile Include="Migrations\201611141718229_add-table-SlaveControl.Designer.cs">
+      <DependentUpon>201611141718229_add-table-SlaveControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201611141848465_changed-SlaveControl-BuildNumber.cs" />
+    <Compile Include="Migrations\201611141848465_changed-SlaveControl-BuildNumber.Designer.cs">
+      <DependentUpon>201611141848465_changed-SlaveControl-BuildNumber.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\IdentityModels.cs" />
     <Compile Include="Models\ViewModels\AccountViewModels.cs" />
     <Compile Include="Models\ViewModels\ManageViewModels.cs" />
@@ -264,6 +277,17 @@
       <Project>{fa24925c-c3e1-46ad-ad82-dbbe60d630e9}</Project>
       <Name>CrawlerLibrary</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Migrations\201611141417400_InitialCreate.resx">
+      <DependentUpon>201611141417400_InitialCreate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201611141718229_add-table-SlaveControl.resx">
+      <DependentUpon>201611141718229_add-table-SlaveControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201611141848465_changed-SlaveControl-BuildNumber.resx">
+      <DependentUpon>201611141848465_changed-SlaveControl-BuildNumber.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

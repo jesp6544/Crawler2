@@ -21,12 +21,12 @@ namespace CrawlerMVC.Models
 
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
+        public DbSet<SlaveControl> SlaveControls { get; set; }
+
         public ApplicationDbContext()
             : base("DefaultConnection", throwIfV1Schema: false)
         {
         }
-
-        public DbSet<SlaveControl> SlaveControls;
 
         public static ApplicationDbContext Create()
         {
