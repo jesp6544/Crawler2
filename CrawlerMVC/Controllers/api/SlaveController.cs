@@ -15,7 +15,7 @@ namespace CrawlerMVC.Controllers.api
         private SlaveControl _slaveControl;
         private ApplicationDbContext ctx_mvc = new ApplicationDbContext();
 
-        public SlaveController()
+        public SlaveController() // Testing appveyor
         {
         }
 
