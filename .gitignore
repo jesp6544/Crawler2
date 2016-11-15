@@ -8,6 +8,7 @@
 *.sln.docstates
 connections.config
 *.pubxml
+.pubxml
 *.publishproj
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
