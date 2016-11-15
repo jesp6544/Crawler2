@@ -8,7 +8,6 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Windows.Forms;
-using EntityFramework.BulkInsert.Extensions;
 
 namespace Crawler {
 
@@ -134,16 +133,14 @@ namespace Crawler {
             List<Content> contentList = this.GetContent(doc);
             List<Link> linkList = this.GetLinks(currentPage, doc);
 
-            /*foreach(Content c in contentList) {
+            foreach(Content c in contentList) {
                 this.ctx.Entry(c).State = EntityState.Added;
-            }*/
-            ctx.BulkInsert(contentList);
+            }
             this.ctx.SaveChanges();
 
-            /*foreach(Link l in linkList) {
+            foreach(Link l in linkList) {
                 this.ctx.Entry(l).State = EntityState.Added;
-            }*/
-            ctx.BulkInsert(linkList);
+            }
             this.ctx.SaveChanges();
 
             this.TotalContentTagsFound += contentList.Count;
