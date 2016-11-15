@@ -25,7 +25,7 @@ namespace CrawlerMVC.Models
         public DbSet<SlaveControl> SlaveControls { get; set; }
 
         public ApplicationDbContext()
-            : base("DefaultConnection", throwIfV1Schema: false)
+            : base("MVCConnectionString", throwIfV1Schema: false)
         {
         }
 
