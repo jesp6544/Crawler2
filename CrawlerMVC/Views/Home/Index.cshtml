@@ -32,6 +32,14 @@
 
 <script type="text/javascript">
 
+
+    var params = {};
+    window.location.search
+        .replace(/[?&]+([^=&]+)=([^&]*)/gi, function (str, key, value) {
+            params[key] = value;
+        }
+    );
+
     function doSearch(query) {
         searching = true;
         //$loadingOverlay.toggleClass("hidden");
@@ -73,12 +81,6 @@
         });
     }
 
-    var params = {};
-    window.location.search
-        .replace(/[?&]+([^=&]+)=([^&]*)/gi, function (str, key, value) {
-            params[key] = value;
-        }
-    );
 
 
     var searching = false;
@@ -88,7 +90,7 @@
 
     var $loadingOverlay = $("#loadingOverlay");
 
-    $(document).load(function () {
+    $(window).load(function () {
 
         var query = params["q"];
 
