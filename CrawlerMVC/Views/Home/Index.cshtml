@@ -2,30 +2,123 @@
     ViewBag.Title = "Home Page";
 }
 
-<div class="jumbotron">
-    <h1>ASP.NET</h1>
-    <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS and JavaScript.</p>
-    <p><a href="http://asp.net" class="btn btn-primary btn-lg">Learn more &raquo;</a></p>
+<style>
+
+    html, body, #loadingOverlay {
+        height: 100%;
+        width: 100%;
+    }
+
+    #loadingOverlay {
+        z-index: 9001;
+        position: absolute;
+        background-color: white;
+    }
+
+</style>
+
+
+<div id="loadingOverlay" class="hidden">
+    <p>Loading...</p>
 </div>
 
-<div class="row">
-    <div class="col-md-4">
-        <h2>Getting started</h2>
-        <p>
-            ASP.NET MVC gives you a powerful, patterns-based way to build dynamic websites that
-            enables a clean separation of concerns and gives you full control over markup
-            for enjoyable, agile development.
-        </p>
-        <p><a class="btn btn-default" href="http://go.microsoft.com/fwlink/?LinkId=301865">Learn more &raquo;</a></p>
-    </div>
-    <div class="col-md-4">
-        <h2>Get more libraries</h2>
-        <p>NuGet is a free Visual Studio extension that makes it easy to add, remove, and update libraries and tools in Visual Studio projects.</p>
-        <p><a class="btn btn-default" href="http://go.microsoft.com/fwlink/?LinkId=301866">Learn more &raquo;</a></p>
-    </div>
-    <div class="col-md-4">
-        <h2>Web Hosting</h2>
-        <p>You can easily find a web hosting company that offers the right mix of features and price for your applications.</p>
-        <p><a class="btn btn-default" href="http://go.microsoft.com/fwlink/?LinkId=301867">Learn more &raquo;</a></p>
-    </div>
+<div id="searchForm">
+    <form action="javascript:void(0);" id="searchForm">
+        <input type="text" id="searchQuery" placeholder="Query" />
+        <input type="submit" value="Search!" id="search"/>
+    </form>
 </div>
+
+
+<script type="text/javascript">
+
+
+    var searching = false;
+
+    var $searchForm = $("#searchForm");
+    var $searchField = $("#searchQuery");
+
+    var $loadingOverlay = $("#loadingOverlay");
+
+    $searchForm.submit(function (e) {
+
+        console.log("Form submitted.");
+
+        if ($searchField.val().length > 0) {
+
+            searching = true;
+            $loadingOverlay.toggleClass("hidden");
+
+            
+            $.ajax({
+                url: "/Dummy.json"
+            }).done(function (data) {
+                
+                $root = $(document.createElement("div"))
+                    .addClass("container");
+
+                $.each(data, function (i, field) {
+
+                    $root.append(
+                        $(document.createElement("div")).append(
+                            $(document.createElement("a"))
+                                .text(field.title)
+                                .attr("href", field.url)
+                        ).append(
+                            $(document.createElement("p"))
+                                .text(field.text)
+                        )
+                    );
+                });
+
+
+                $("body").html($root);
+
+                //var JSONobj = $.parseJSON(data);
+            }).fail(function (jqXHR, status, error) {
+
+            }).always(function () {
+
+                $loadingOverlay.toggleClass("hidden");
+                searching = false;
+            });
+
+        }
+
+        e.preventDefault();
+        return false;
+    });
+
+</script>
+
+@*
+
+    <div class="jumbotron">
+        <h1>ASP.NET</h1>
+        <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS and JavaScript.</p>
+        <p><a href="http://asp.net" class="btn btn-primary btn-lg">Learn more &raquo;</a></p>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <h2>Getting started</h2>
+            <p>
+                ASP.NET MVC gives you a powerful, patterns-based way to build dynamic websites that
+                enables a clean separation of concerns and gives you full control over markup
+                for enjoyable, agile development.
+            </p>
+            <p><a class="btn btn-default" href="http://go.microsoft.com/fwlink/?LinkId=301865">Learn more &raquo;</a></p>
+        </div>
+        <div class="col-md-4">
+            <h2>Get more libraries</h2>
+            <p>NuGet is a free Visual Studio extension that makes it easy to add, remove, and update libraries and tools in Visual Studio projects.</p>
+            <p><a class="btn btn-default" href="http://go.microsoft.com/fwlink/?LinkId=301866">Learn more &raquo;</a></p>
+        </div>
+        <div class="col-md-4">
+            <h2>Web Hosting</h2>
+            <p>You can easily find a web hosting company that offers the right mix of features and price for your applications.</p>
+            <p><a class="btn btn-default" href="http://go.microsoft.com/fwlink/?LinkId=301867">Learn more &raquo;</a></p>
+        </div>
+    </div>
+
+*@
