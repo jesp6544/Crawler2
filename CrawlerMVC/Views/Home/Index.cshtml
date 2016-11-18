@@ -18,7 +18,7 @@
 </style>
 
 
-<div id="loadingOverlay" class="hidden">
+<div id="loadingOverlay" style="display: none">
     <p>Loading...</p>
 </div>
 
@@ -32,6 +32,54 @@
 
 <script type="text/javascript">
 
+    function doSearch(query) {
+        searching = true;
+        //$loadingOverlay.toggleClass("hidden");
+
+        $loadingOverlay.fadeIn(1000).delay(1000);
+
+        $.ajax({
+            method: "GET",
+            url: "/Dummy.json",
+            data: { query: query }
+        }).done(function (data) {
+
+            $root = $(document.createElement("div"))
+                .addClass("container");
+
+            $.each(data, function (i, field) {
+
+                $root.append(
+                    $(document.createElement("div")).append(
+                        $(document.createElement("a"))
+                            .text(field.title)
+                            .attr("href", field.url)
+                    ).append(
+                        $(document.createElement("p"))
+                            .text(field.text)
+                    )
+                );
+            });
+
+            $("body").html($root);
+
+            //var JSONobj = $.parseJSON(data);
+        }).fail(function (jqXHR, status, error) {
+
+        }).always(function () {
+
+            $loadingOverlay.fadeOut(1000);
+            searching = false;
+        });
+    }
+
+    var params = {};
+    window.location.search
+        .replace(/[?&]+([^=&]+)=([^&]*)/gi, function (str, key, value) {
+            params[key] = value;
+        }
+    );
+
 
     var searching = false;
 
@@ -40,49 +88,24 @@
 
     var $loadingOverlay = $("#loadingOverlay");
 
+    $(document).load(function () {
+
+        var query = params["q"];
+
+        if (query.length > 0) {
+            doSearch(query);
+        }
+    });
+
     $searchForm.submit(function (e) {
 
         console.log("Form submitted.");
 
-        if ($searchField.val().length > 0) {
+        var query = $searchField.val();
 
-            searching = true;
-            $loadingOverlay.toggleClass("hidden");
-
-            
-            $.ajax({
-                url: "/Dummy.json"
-            }).done(function (data) {
-                
-                $root = $(document.createElement("div"))
-                    .addClass("container");
-
-                $.each(data, function (i, field) {
-
-                    $root.append(
-                        $(document.createElement("div")).append(
-                            $(document.createElement("a"))
-                                .text(field.title)
-                                .attr("href", field.url)
-                        ).append(
-                            $(document.createElement("p"))
-                                .text(field.text)
-                        )
-                    );
-                });
-
-
-                $("body").html($root);
-
-                //var JSONobj = $.parseJSON(data);
-            }).fail(function (jqXHR, status, error) {
-
-            }).always(function () {
-
-                $loadingOverlay.toggleClass("hidden");
-                searching = false;
-            });
-
+        if (query.length > 0 && !searching) {
+            history.pushState({}, "Results for \"" + query + "\"", "?q=" + query);
+            doSearch(query);
         }
 
         e.preventDefault();
