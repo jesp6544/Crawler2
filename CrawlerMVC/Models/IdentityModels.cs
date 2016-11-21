@@ -2,6 +2,7 @@
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
 using System.Data.Entity;
+using System.Data.Entity.Core.Common;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -24,7 +25,7 @@ namespace CrawlerMVC.Models
         public DbSet<SlaveControl> SlaveControls { get; set; }
 
         public ApplicationDbContext()
-            : base("DefaultConnection", throwIfV1Schema: false)
+            : base("MVCConnectionString", throwIfV1Schema: false)
         {
         }
 
