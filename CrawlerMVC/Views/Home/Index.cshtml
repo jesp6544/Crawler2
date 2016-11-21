@@ -44,7 +44,7 @@
         searching = true;
         //$loadingOverlay.toggleClass("hidden");
 
-        $loadingOverlay.fadeIn(1000).delay(1000);
+        $loadingOverlay.fadeIn(500).delay();
 
         $.ajax({
             method: "GET",
@@ -76,12 +76,10 @@
 
         }).always(function () {
 
-            $loadingOverlay.fadeOut(1000);
+            $loadingOverlay.fadeOut(500);
             searching = false;
         });
     }
-
-
 
     var searching = false;
 
@@ -89,6 +87,7 @@
     var $searchField = $("#searchQuery");
 
     var $loadingOverlay = $("#loadingOverlay");
+
 
     $(window).load(function () {
 

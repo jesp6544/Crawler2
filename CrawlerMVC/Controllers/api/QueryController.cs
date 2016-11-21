@@ -1,0 +1,48 @@
+﻿using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Web.Http;
+using CrawlerLibrary.Models;
+
+
+namespace CrawlerMVC.Controllers.api
+{
+    public class QueryController : ApiController
+    {
+
+        // slaves calling home: GET api/Slave
+        public string Index(string query, int page = 1) {
+            using (var ctx = new CrawlerContext()) {
+
+
+                int limit = 10;
+                int offset = page - 1 * limit;
+
+                string sql = string.Format(@"
+                    SELECT TOP 10 *
+                    FROM [dbo].Contents AS FT_TBL
+
+                    INNER JOIN  
+                    FREETEXTTABLE(
+                        Contents, 
+                        [text],  
+                        '{0}') AS KEY_TBL  
+                    ON FT_TBL.id = KEY_TBL.[KEY]  
+                    ORDER BY KEY_TBL.RANK DESC 
+
+                    OFFSET {1} ROWS FETCH NEXT {2} ROWS ONLY
+                ", query, offset, limit);
+
+                List<Content> content = ctx.Content.SqlQuery(sql).ToList();
+
+                return JsonConvert.SerializeObject(
+                    ctx.Content.SqlQuery(sql).ToList()
+                );
+            }
+        }
+
+    }
+}
