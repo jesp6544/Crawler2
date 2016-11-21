@@ -249,7 +249,7 @@ namespace Crawler {
             Uri uri = new Uri(currentLink);
 
             if(foundLink.StartsWith("//")) {
-                foundLink = uri.Scheme + "://" + foundLink.Substring(2);
+                foundLink = uri.Scheme  + "://" + uri.Authority + foundLink.Substring(1);
             } else if(foundLink.StartsWith("/")) {
                 // is internal
                 internalLink = true;
