@@ -9,7 +9,7 @@ using System.Web.Http;
 
 namespace CrawlerMVC.Controllers.api
 {
-    public class QueryController : ApiController
+    public class SearchController : ApiController
     {
         // slaves calling home: GET api/Slave
         public IHttpActionResult Get(string query, int page = 1)

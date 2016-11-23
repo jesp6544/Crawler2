@@ -182,7 +182,7 @@
     <Compile Include="App_Start\Startup.Auth.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\AccountController.cs" />
-    <Compile Include="Controllers\api\QueryController.cs" />
+    <Compile Include="Controllers\api\SearchController.cs" />
     <Compile Include="Controllers\api\SlaveController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ManageController.cs" />
@@ -218,7 +218,7 @@
     <Content Include="Content\Site.css" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
-    <Content Include="..\Crawler\connections.config">
+    <Content Include="..\CrawlerLibrary\connections.config">
       <Link>connections.config</Link>
     </Content>
     <None Include="Properties\PublishProfiles\crawler-mvc - Web Deploy.pubxml" />
