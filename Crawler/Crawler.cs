@@ -127,6 +127,18 @@ namespace Crawler {
             HtmlAgilityPack.HtmlDocument doc = new HtmlAgilityPack.HtmlDocument();
             doc.LoadHtml(HTML);
 
+            try {
+                HtmlNode node = doc.DocumentNode.SelectSingleNode("//link[@rel='canonical']");
+                if(node != null) {
+                    string href = node.Attributes["href"].Value;
+                    if(href != currentPage.url) {
+                        this.addOrGetPage(href);
+                        return;
+                    }
+                }
+            } catch(Exception) {
+            }
+
             string title = doc.DocumentNode.SelectSingleNode("//title").InnerText;
             this.updateTitle(title);
 
@@ -249,7 +261,7 @@ namespace Crawler {
             Uri uri = new Uri(currentLink);
 
             if(foundLink.StartsWith("//")) {
-                foundLink = uri.Scheme  + "://" + uri.Authority + foundLink.Substring(1);
+                foundLink = uri.Scheme + "://" + uri.Authority + foundLink.Substring(1);
             } else if(foundLink.StartsWith("/")) {
                 // is internal
                 internalLink = true;
