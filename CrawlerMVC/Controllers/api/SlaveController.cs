@@ -13,47 +13,35 @@ namespace CrawlerMVC.Controllers.api
     public class SlaveController : ApiController
     {
         private SlaveControl _slaveControl;
+        private ApplicationDbContext ctx_mvc = new ApplicationDbContext();
 
-        public SlaveController()
+        public SlaveController() // Testing appveyor
         {
-            using (var ctx = new ApplicationDbContext())
-            {
-                if (ctx.SlaveControls.Any() == false) // Create initial dummy SlaveControl item for a fresh db
-                {
-                    _slaveControl = new SlaveControl { TimeStamp = DateTime.Now };
-                    ctx.SlaveControls.Add(_slaveControl);
-                    ctx.SaveChanges();
-                }
-            }
         }
 
         // slaves calling home: GET api/Slave
-        public string GetAllSlaves()
+        public IHttpActionResult Get()
         {
             using (var ctx = new ApplicationDbContext())
             {
-                return JsonConvert.SerializeObject(ctx.SlaveControls.First());
+                return Ok(ctx.SlaveControls.First());
             }
         }
 
-        // appveyor success notification: GET api/Slave/{buildNumber}
-        public IHttpActionResult Get(int id)
+        // appveyor success notification: PUT api/Slave/{buildNumber}
+        public IHttpActionResult Put(int id)
         {
-            using (var ctx = new ApplicationDbContext())
+            try
             {
-                try
-                {
-                    _slaveControl = ctx.SlaveControls.First();
-                    _slaveControl.BuildNumber = id;
-                    _slaveControl.TimeStamp = DateTime.Now;
-                    ctx.SlaveControls.Add(_slaveControl);
-                    ctx.SaveChanges();
-                    return Ok();
-                }
-                catch (Exception)
-                {
-                    return BadRequest();
-                }
+                _slaveControl = ctx_mvc.SlaveControls.First();
+                _slaveControl.BuildNumber = id;
+                _slaveControl.TimeStamp = DateTime.Now;
+                ctx_mvc.SaveChanges();
+                return Ok(_slaveControl);
+            }
+            catch (Exception)
+            {
+                return BadRequest();
             }
         }
     }
