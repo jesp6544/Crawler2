@@ -7,16 +7,15 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 
-namespace CrawlerMVC.Controllers.api {
-
-    private class
-
-
-    public class QueryController : ApiController {
-
+namespace CrawlerMVC.Controllers.api
+{
+    public class SearchController : ApiController
+    {
         // slaves calling home: GET api/Slave
-        public IHttpActionResult Get(string query, int page = 1) {
-            using(var ctx = new CrawlerContext()) {
+        public IHttpActionResult Get(string query, int page = 1)
+        {
+            using (var ctx = new CrawlerContext())
+            {
                 int limit = 10;
                 int offset = page - 1 * limit;
 
