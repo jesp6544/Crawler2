@@ -1,6 +1,13 @@
-﻿using System;
+﻿using CrawlerLibrary.Models;
+using Microsoft.Practices.ServiceLocation;
+using SolrNet;
+using SolrNet.Impl;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -11,11 +18,49 @@ namespace Crawler {
         private static readonly DateTime startTime = DateTime.Now;
 
         private static void Main() {
-            AppDomain.CurrentDomain.UnhandledException += delegate (object sender, UnhandledExceptionEventArgs args) {
+            /*AppDomain.CurrentDomain.UnhandledException += delegate (object sender, UnhandledExceptionEventArgs args) {
                 Exception e = (Exception)args.ExceptionObject;
                 Console.WriteLine("Unhandled exception: " + e);
                 Environment.Exit(1);
-            };
+            };*/
+
+            SolrConnection connection = new SolrConnection("http://10.140.109.117:8983/solr/test");
+            Startup.Init<Page>(connection);
+
+            string currentHTML;
+
+            using(var client = new WebClient()) {
+                Uri uri = new Uri("http://wikipedia.org");
+                try {
+                    currentHTML = client.DownloadString(uri);
+                    //HTML = client.DownloadString(uri);
+                } catch(WebException e) {
+                    return;
+                }
+            }
+
+            MemoryStream ms = new MemoryStream(Encoding.Unicode.GetBytes(currentHTML));
+
+            var solr = ServiceLocator.Current.GetInstance();
+            //ISolrOperations<HTMLContent> solr = ServiceLocator.Current.GetInstance<ISolrOperations<HTMLContent>>();
+            ExtractResponse extractResponse = solr.Extract(new ExtractParameters(ms, "9001", "") {
+                AutoCommit = true,
+                Capture = "body",
+                CaptureAttributes = false,
+                DefaultField = "text",
+                ExtractFormat = ExtractFormat.Text
+            });
+
+            /*solr.Add(new HTMLContent() {
+                DiscoveryID = currentPage.id,
+                AbsoluteUri = currentPage.url, //AbsoluteUri is provided by crawler - this is just example to show mapping
+                Text = extractResponse.Content,
+                Title = fileInfo.Name
+            });*/
+
+            solr.Commit();
+
+            return;
 
             Crawler crawler = new Crawler();
             Thread renderThread = new Thread(() => {

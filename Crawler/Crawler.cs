@@ -1,15 +1,46 @@
 ﻿using CrawlerLibrary.Models;
 using HtmlAgilityPack;
+using Microsoft.Practices.ServiceLocation;
+using SolrNet;
+using SolrNet.Attributes;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Mime;
+using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 
 namespace Crawler {
+
+    public class HTMLContent {
+
+        [SolrField("absoluteuri")]
+        public string AbsoluteUri { get; set; }
+
+        [SolrUniqueKey("id")]
+        public long DiscoveryID { get; set; }
+
+        [SolrField("score")]
+        public double Score { get; set; }
+
+        [SolrField("title")]
+        public string Title { get; set; }
+
+        [SolrField("extension")]
+        public string Extension { get; set; }
+
+        [SolrField("publishdate")]
+        public string PublishDate { get; set; }
+
+        [SolrField("text")]
+        public ICollection<string> Text { get; set; }
+    }
 
     public class Crawler {
         private CrawlerContext ctx;
@@ -124,6 +155,26 @@ namespace Crawler {
                 }
             }
 
+            MemoryStream ms = new MemoryStream(Encoding.Unicode.GetBytes(currentHTML));
+
+            ISolrOperations<HTMLContent> solr = ServiceLocator.Current.GetInstance<ISolrOperations<HTMLContent>>();
+            ExtractResponse extractResponse = solr.Extract(new ExtractParameters(ms, currentPage.id.ToString(), "") {
+                AutoCommit = true,
+                Capture = "body",
+                CaptureAttributes = false,
+                DefaultField = "text",
+                ExtractFormat = ExtractFormat.Text
+            });
+
+            /*solr.Add(new HTMLContent() {
+                DiscoveryID = currentPage.id,
+                AbsoluteUri = currentPage.url, //AbsoluteUri is provided by crawler - this is just example to show mapping
+                Text = extractResponse.Content,
+                Title = fileInfo.Name
+            });*/
+
+            solr.Commit();
+
             HtmlAgilityPack.HtmlDocument doc = new HtmlAgilityPack.HtmlDocument();
             doc.LoadHtml(HTML);
 
@@ -136,8 +187,7 @@ namespace Crawler {
                         return;
                     }
                 }
-            } catch(Exception) {
-            }
+            } catch(Exception) { }
 
             string title = doc.DocumentNode.SelectSingleNode("//title").InnerText;
             this.updateTitle(title);
