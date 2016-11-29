@@ -150,10 +150,10 @@ namespace Crawler {
             }
             this.ctx.SaveChanges();
 
-            foreach(Link l in linkList) {
-                this.ctx.Entry(l).State = EntityState.Added;
-            }
-            this.ctx.SaveChanges();
+            //foreach(Link l in linkList) {
+            //    this.ctx.Entry(l).State = EntityState.Added;
+            //}
+            //this.ctx.SaveChanges();
 
             this.TotalContentTagsFound += contentList.Count;
             this.TotalLinkTagsFound += linkList.Count;
@@ -283,19 +283,18 @@ namespace Crawler {
 
         private Page addOrGetPage(string foundLink) {
             using(var c = new CrawlerContext()) {
-                c.Database.ExecuteSqlCommandAsync(string.Format(@"
+                c.Database.ExecuteSqlCommand(string.Format(@"
                     declare @url varchar(500) = '{0}';
 
                     IF NOT EXISTS (SELECT TOP 1 * FROM Pages WHERE (url = @url))
                     BEGIN
                         INSERT INTO Pages(url, scanned)
-	                    Values(@url, 0)
+                        Values(@url, 0)
                     END
                 ", foundLink));
             }
             return new Page();
-
-            return this.ctx.Pages.SqlQuery(string.Format(@"
+            this.ctx.Pages.SqlQuery(string.Format(@"
                     declare @url varchar(500) = '{0}';
 
                     IF NOT EXISTS (SELECT TOP 1 * FROM Pages WHERE (url = @url))
@@ -309,6 +308,7 @@ namespace Crawler {
 	                    SELECT TOP 1 * FROM Pages WHERE url = @url
                     END
                 ", foundLink)).Single();
+            return new Page();
 
             Page foundPage = null;
 

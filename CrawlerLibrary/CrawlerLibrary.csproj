@@ -57,6 +57,8 @@
     <Compile Include="Models\Image.cs" />
     <Compile Include="Models\Link.cs" />
     <Compile Include="Models\Page.cs" />
+    <Compile Include="Models\PageBench.cs" />
+    <Compile Include="Models\PageBenchTemp.cs" />
     <Compile Include="Models\SlaveControl.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

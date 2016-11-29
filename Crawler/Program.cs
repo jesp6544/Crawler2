@@ -57,7 +57,7 @@ namespace Crawler {
                     }
                 }
 
-                Thread.Sleep(1000 / 10);
+                Thread.Sleep(1000 / 2);
             }
         }
 
