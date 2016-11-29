@@ -18,19 +18,19 @@ namespace Crawler {
         private static readonly DateTime startTime = DateTime.Now;
 
         private static void Main() {
-            /*AppDomain.CurrentDomain.UnhandledException += delegate (object sender, UnhandledExceptionEventArgs args) {
+            AppDomain.CurrentDomain.UnhandledException += delegate (object sender, UnhandledExceptionEventArgs args) {
                 Exception e = (Exception)args.ExceptionObject;
                 Console.WriteLine("Unhandled exception: " + e);
                 Environment.Exit(1);
-            };*/
+            };
 
-            SolrConnection connection = new SolrConnection("http://10.140.109.117:8983/solr/test");
-            Startup.Init<Page>(connection);
+            Startup.InitContainer();
+            Startup.Init<HTMLContent>("http://10.140.102.9:8983/solr/test");
 
-            string currentHTML;
+            /*string currentHTML;
 
             using(var client = new WebClient()) {
-                Uri uri = new Uri("http://wikipedia.org");
+                Uri uri = new Uri("https://en.wikipedia.org/wiki/Dependency_injection");
                 try {
                     currentHTML = client.DownloadString(uri);
                     //HTML = client.DownloadString(uri);
@@ -39,28 +39,22 @@ namespace Crawler {
                 }
             }
 
-            MemoryStream ms = new MemoryStream(Encoding.Unicode.GetBytes(currentHTML));
+            MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(currentHTML));
 
-            var solr = ServiceLocator.Current.GetInstance();
-            //ISolrOperations<HTMLContent> solr = ServiceLocator.Current.GetInstance<ISolrOperations<HTMLContent>>();
-            ExtractResponse extractResponse = solr.Extract(new ExtractParameters(ms, "9001", "") {
+            //var solr = ServiceLocator.Current.GetInstance();
+            ISolrOperations<HTMLContent> solr = ServiceLocator.Current.GetInstance<ISolrOperations<HTMLContent>>();
+            ExtractResponse extractResponse = solr.Extract(new ExtractParameters(ms, "9001", "Wikipedia main") {
                 AutoCommit = true,
-                Capture = "body",
+                Capture = "p",
                 CaptureAttributes = false,
                 DefaultField = "text",
-                ExtractFormat = ExtractFormat.Text
+                ExtractFormat = ExtractFormat.Text,
+                XPath = "/xhtml:html/xhtml:body/xhtml:div/descendant:node()"
             });
-
-            /*solr.Add(new HTMLContent() {
-                DiscoveryID = currentPage.id,
-                AbsoluteUri = currentPage.url, //AbsoluteUri is provided by crawler - this is just example to show mapping
-                Text = extractResponse.Content,
-                Title = fileInfo.Name
-            });*/
 
             solr.Commit();
 
-            return;
+            return;*/
 
             Crawler crawler = new Crawler();
             Thread renderThread = new Thread(() => {

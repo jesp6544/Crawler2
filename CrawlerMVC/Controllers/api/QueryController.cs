@@ -9,9 +9,6 @@ using System.Web.Http;
 
 namespace CrawlerMVC.Controllers.api {
 
-    private class
-
-
     public class QueryController : ApiController {
 
         // slaves calling home: GET api/Slave

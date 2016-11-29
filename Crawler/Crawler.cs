@@ -155,26 +155,6 @@ namespace Crawler {
                 }
             }
 
-            MemoryStream ms = new MemoryStream(Encoding.Unicode.GetBytes(currentHTML));
-
-            ISolrOperations<HTMLContent> solr = ServiceLocator.Current.GetInstance<ISolrOperations<HTMLContent>>();
-            ExtractResponse extractResponse = solr.Extract(new ExtractParameters(ms, currentPage.id.ToString(), "") {
-                AutoCommit = true,
-                Capture = "body",
-                CaptureAttributes = false,
-                DefaultField = "text",
-                ExtractFormat = ExtractFormat.Text
-            });
-
-            /*solr.Add(new HTMLContent() {
-                DiscoveryID = currentPage.id,
-                AbsoluteUri = currentPage.url, //AbsoluteUri is provided by crawler - this is just example to show mapping
-                Text = extractResponse.Content,
-                Title = fileInfo.Name
-            });*/
-
-            solr.Commit();
-
             HtmlAgilityPack.HtmlDocument doc = new HtmlAgilityPack.HtmlDocument();
             doc.LoadHtml(HTML);
 
@@ -189,10 +169,26 @@ namespace Crawler {
                 }
             } catch(Exception) { }
 
+            string tHTML = currentHTML;
+            MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(tHTML));
+
+            //var solr = ServiceLocator.Current.GetInstance();
+            ISolrOperations<HTMLContent> solr = ServiceLocator.Current.GetInstance<ISolrOperations<HTMLContent>>();
+            ExtractResponse extractResponse = solr.Extract(new ExtractParameters(ms, currentPage.id.ToString(), currentPage.url) {
+                AutoCommit = true,
+                Capture = "p",
+                CaptureAttributes = false,
+                DefaultField = "text",
+                ExtractFormat = ExtractFormat.Text,
+                XPath = "/xhtml:html/xhtml:body/xhtml:div/descendant:node()"
+            });
+
+            solr.Commit();
+
             string title = doc.DocumentNode.SelectSingleNode("//title").InnerText;
             this.updateTitle(title);
 
-            List<Content> contentList = this.GetContent(doc);
+            /*List<Content> contentList = this.GetContent(doc);
             List<Link> linkList = this.GetLinks(currentPage, doc);
 
             foreach(Content c in contentList) {
@@ -206,7 +202,7 @@ namespace Crawler {
             this.ctx.SaveChanges();
 
             this.TotalContentTagsFound += contentList.Count;
-            this.TotalLinkTagsFound += linkList.Count;
+            this.TotalLinkTagsFound += linkList.Count;*/
         }
 
         private void updateTitle(string title) {
