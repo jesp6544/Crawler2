@@ -28,7 +28,7 @@ namespace Crawler
             };
 
             Startup.InitContainer();
-            Startup.Init<HTMLContent>("http://10.140.102.40:8983/solr/test");
+            Startup.Init<HTMLContent>("http://10.140.102.40:8983/solr/indexer");
 
             /*string currentHTML;
 
