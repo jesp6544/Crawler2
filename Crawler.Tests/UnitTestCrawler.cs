@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Configuration;
 using CrawlerLibrary.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NUnit.Framework;
+using SolrNet;
+using System.Linq;
 using Assert = NUnit.Framework.Assert;
 
 namespace Crawler.Tests
@@ -34,7 +37,7 @@ namespace Crawler.Tests
             crawler.CurrentPage = crawler.GetNextPage();
             Assert.IsNotNull(crawler.CurrentPage);
         }
-        [Test, NUnit.Framework.Description("")]
+        [Test, NUnit.Framework.Description("Testing if broken links / internal links gets fixed")]
         public void FixLinkTest()
         {
             var crawler = new Crawler();
@@ -46,10 +49,22 @@ namespace Crawler.Tests
             Assert.AreEqual(bla2, "http://www.lort.com/martinErLort");
             Assert.IsTrue(bla3 == "http://www.lort.com?martinErLort" || bla3 == "http://www.lort.com/?martinErLort");
         }
+
+        [Test, NUnit.Framework.Description("Tests for connection to solr")]
+        public void SolrTest()
+        {
+            Assert.DoesNotThrow(() =>
+            {
+                var bla = ConfigurationManager.ConnectionStrings["Solr"].ConnectionString;
+                Startup.InitContainer();
+                Startup.Init<HTMLContent>(bla);
+            });
+        }
         [Test, NUnit.Framework.Description("")]
         public void xxTest()
         {
             
         }
+    
     }
 }
