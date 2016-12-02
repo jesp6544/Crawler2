@@ -47,6 +47,10 @@
       <HintPath>..\packages\HtmlAgilityPack.1.4.9.5\lib\Net45\HtmlAgilityPack.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Microsoft.Practices.ServiceLocation, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\CommonServiceLocator.1.0\lib\NET35\Microsoft.Practices.ServiceLocation.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Microsoft.QualityTools.Testing.Fakes, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
     </Reference>
@@ -57,8 +61,13 @@
     <Reference Include="nunit.framework.Fakes">
       <HintPath>FakesAssemblies\nunit.framework.Fakes.dll</HintPath>
     </Reference>
+    <Reference Include="SolrNet, Version=0.4.0.4001, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\SolrNet.0.4.0.4001\lib\SolrNet.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.configuration" />
   </ItemGroup>
   <Choose>
     <When Condition="('$(VisualStudioVersion)' == '10.0' or '$(VisualStudioVersion)' == '') and '$(TargetFrameworkVersion)' == 'v3.5'">
@@ -86,6 +95,7 @@
     </None>
     <Fakes Include="Fakes\nunit.framework.fakes" />
     <None Include="packages.config" />
+    <None Include="SolrNet.chm" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CrawlerLibrary\CrawlerLibrary.csproj">
@@ -96,6 +106,9 @@
       <Project>{ed2ce55c-fa00-4c5a-9db9-d4e03735ab0f}</Project>
       <Name>Crawler</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="changelog.txt" />
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
