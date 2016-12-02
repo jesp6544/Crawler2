@@ -1,6 +1,7 @@
 ﻿using CrawlerLibrary.Models;
 using Microsoft.Practices.ServiceLocation;
 using SolrNet;
+using SolrNet.Commands.Parameters;
 using SolrNet.Impl;
 using System;
 using System.Collections.Generic;
@@ -28,7 +29,27 @@ namespace Crawler
             };
 
             Startup.InitContainer();
-            Startup.Init<HTMLContent>("http://10.140.102.40:8983/solr/indexer");
+            Startup.Init<HTMLContent>("http://176.23.159.28:8983/solr/testcore");
+
+            /*ISolrOperations<HTMLContent> solr = ServiceLocator.Current.GetInstance<ISolrOperations<HTMLContent>>();
+            var results = solr.Query(
+                new SolrQueryByField("text", "Martin"), new QueryOptions {
+                    Highlight = new HighlightingParameters {
+                        Fields = new[] { "text" },
+                    }
+                });
+
+            Console.WriteLine("dfsdf");
+            Console.WriteLine(results.Count);
+            */
+
+            /*foreach(var h in results.Highlights[results[0].Title]) {
+                Console.WriteLine("{0}: {1}", h.Key, string.Join(", ", h.Value.ToArray()));
+            }*/
+
+            //Console.ReadLine();
+
+            //return;
 
             /*string currentHTML;
 

@@ -198,12 +198,15 @@ namespace Crawler
                 AutoCommit = true,
                 Capture = "p",
                 CaptureAttributes = false,
-                DefaultField = "text",
-                ExtractFormat = ExtractFormat.Text,
+                //DefaultField = "text",
+                StreamType = "text/html",
+                //ExtractFormat = ExtractFormat.Text,
                 XPath = "/xhtml:html/xhtml:body/xhtml:div/descendant:node()",
             });
 
             solr.Commit();
+            solr.BuildSpellCheckDictionary();
+            solr.Optimize();
 
             string title = doc.DocumentNode.SelectSingleNode("//title").InnerText;
             this.updateTitle(title);
