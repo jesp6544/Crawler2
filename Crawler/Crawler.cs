@@ -137,7 +137,7 @@ namespace Crawler
                 try
                 {
                     this.currentHTML = client.DownloadString(uri);
-                    HTML = client.DownloadString(uri);
+                    HTML = this.currentHTML;
                 }
                 catch (WebException e)
                 {
