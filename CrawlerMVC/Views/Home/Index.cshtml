@@ -30,6 +30,7 @@
     #searchResults {
         /*background-color: red;*/
         flex: 1 1 auto;
+        overflow-y:scroll;
     }
 
     .vertical-align {
@@ -102,8 +103,8 @@
         $.ajax({
             method: "GET",
             //url: "/Dummy.json",
-            url: "/api/search/" + query,
-            data: { query: query }
+            url: "/api/search/" + query
+            //,data: { query: query }
         }).done(function (data) {
 
             $root = $(document.createElement("div"))
