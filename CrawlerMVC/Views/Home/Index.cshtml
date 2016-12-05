@@ -76,7 +76,8 @@
 
         $.ajax({
             method: "GET",
-            url: "/Dummy.json",
+            //url: "/Dummy.json",
+            url: "/api/search/" + query,
             data: { query: query }
         }).done(function (data) {
 
@@ -88,16 +89,16 @@
                 $root.append(
                     $(document.createElement("div")).append(
                         $(document.createElement("a"))
-                            .text(field.title)
-                            .attr("href", field.url)
+                            .text(field.Title)
+                            .attr("href", field.URL)
                     ).append(
                         $(document.createElement("p"))
-                            .text(field.text)
+                            .text(field.Text)
                     )
                 );
             });
 
-            $("body").html($root);
+            $("#searchResults").html($root);
 
             //var JSONobj = $.parseJSON(data);
         }).fail(function (jqXHR, status, error) {
