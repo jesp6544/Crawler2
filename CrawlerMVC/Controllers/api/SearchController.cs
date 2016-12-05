@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net;
-using CrawlerLibrary.Models;
+﻿using CrawlerLibrary.Models;
 using Microsoft.Practices.ServiceLocation;
+using Newtonsoft.Json;
 using SolrNet;
 using SolrNet.Commands.Parameters;
+using System;
+using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Web.Http;
-using Newtonsoft.Json;
 
 namespace CrawlerMVC.Controllers.api
 {
@@ -17,18 +17,15 @@ namespace CrawlerMVC.Controllers.api
         public string Text;
         public string Title;
     }
+
     public class SearchController : ApiController
     {
-        //http://176.23.159.28:8983/solr/testcore/query?q=p:post&hl=true&hl.fl=p&hl.fragsize=500&fl=id+title+resourcename
-        // slaves calling home: GET api/Slave
-        public IHttpActionResult Get()
+        [Route("api/Search/{query}")]
+        public IHttpActionResult Get(string query)
         {
-
             using (var client = new WebClient())
             {
-                var query = "test";
-                
-                Uri uri = new Uri(string.Format("http://176.23.159.28:8983/solr/testcore/query?q=p:{0}&hl=true&hl.fl=p&hl.fragsize=500&fl=id+title+resourcename",query));
+                Uri uri = new Uri(string.Format("http://176.23.159.28:8983/solr/testcore/query?q=p:{0}&hl=true&hl.fl=p&hl.fragsize=500&fl=id+title+resourcename", query));
                 try
                 {
                     var jsonReturn = client.DownloadString(uri);
@@ -49,13 +46,6 @@ namespace CrawlerMVC.Controllers.api
                     return BadRequest();
                 }
             }
-            var httpClient = new System.Net.Http.HttpClient(new HttpClientHandler());
-            //httpClient.
-
-            //var results =
-            return Ok();
         }
-       
-          
     }
 }
