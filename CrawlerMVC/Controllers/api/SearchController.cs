@@ -20,12 +20,13 @@ namespace CrawlerMVC.Controllers.api
 
     public class SearchController : ApiController
     {
-        [Route("api/Search/{query}")]
-        public IHttpActionResult Get(string query)
+        [Route("api/Search/{query}/{page}")]
+        public IHttpActionResult Get(string query, int page)
         {
             using (var client = new WebClient())
             {
-                Uri uri = new Uri(string.Format("http://176.23.159.28:8983/solr/testcore/query?q=p:{0}&hl=true&hl.fl=p&hl.fragsize=500&fl=id+title+resourcename", query));
+                int offset = (page - 1) * 10;
+                Uri uri = new Uri(string.Format("http://176.23.159.28:8983/solr/testcore/query?q=p:{0}&hl=true&hl.fl=p&hl.fragsize=500&fl=id+title+resourcename&start={1}", query, offset));
                 try
                 {
                     var jsonReturn = client.DownloadString(uri);
