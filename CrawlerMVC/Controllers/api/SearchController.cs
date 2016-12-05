@@ -20,7 +20,7 @@ namespace CrawlerMVC.Controllers.api
 
     public class SearchController : ApiController
     {
-        [Route("api/Search/{query}/{page}")]
+        [Route("api/Search/{query}/{page?}")]
         public IHttpActionResult Get(string query, int page = 1)
         {
             using (var client = new WebClient())
