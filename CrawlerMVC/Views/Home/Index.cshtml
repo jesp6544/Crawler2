@@ -6,6 +6,8 @@
     html, body, #loadingOverlay {
         height: 100%;
         width: 100%;
+        padding: 0;
+        margin: 0;
     }
 
     #loadingOverlay {
@@ -14,8 +16,20 @@
         background-color: white;
     }
 
-    #main, #main div:first-child {
+    #main/*, #main div:first-child*/ {
         height: 100%;
+        display: flex;
+        flex-flow: column;
+    }
+
+    #searchBar {
+        /*background-color: forestgreen;*/
+        height: auto;
+    }
+
+    #searchResults {
+        /*background-color: red;*/
+        flex: 1 1 auto;
     }
 
     .vertical-align {
@@ -23,6 +37,7 @@
         align-items: center;
         justify-content: center;
         flex-direction: row;
+        height: 100% !important;
     }
 
     .form-control {
@@ -54,8 +69,7 @@
         <div class="col-md-2"></div>
     </div>
     <div class="row" id="searchResults">
-        <div class="container-fluid">
-        </div>
+        asdfasdf
     </div>
 </div>
 
@@ -68,11 +82,22 @@
         }
     );
 
+    var searching = false;
+
+    var $searchForm = $("#searchForm");
+    var $searchField = $("#searchQuery");
+
+    var $loadingOverlay = $("#loadingOverlay");
+    var $searchResults = $("#searchResults");
+    var $searchBar = $("#searchBar");
+
     function doSearch(query) {
         searching = true;
         //$loadingOverlay.toggleClass("hidden");
 
-        $loadingOverlay.fadeIn(500).delay();
+        //$loadingOverlay.fadeIn(500).delay();
+        $searchResults.html("Loading...");
+        $searchBar.removeClass("vertical-align");
 
         $.ajax({
             method: "GET",
@@ -98,24 +123,18 @@
                 );
             });
 
-            $("#searchResults").html($root);
+            $searchResults.html($root);
 
             //var JSONobj = $.parseJSON(data);
         }).fail(function (jqXHR, status, error) {
 
         }).always(function () {
 
-            $loadingOverlay.fadeOut(500);
+            //$loadingOverlay.fadeOut(500);
             searching = false;
         });
     }
 
-    var searching = false;
-
-    var $searchForm = $("#searchForm");
-    var $searchField = $("#searchQuery");
-
-    var $loadingOverlay = $("#loadingOverlay");
 
     $(window).load(function () {
 

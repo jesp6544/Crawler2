@@ -228,9 +228,7 @@
     <Content Include="Content\Site.css" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
-    <Content Include="connections.config">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <Content Include="connections.config" />
     <None Include="Properties\PublishProfiles\crawler-mvc - Web Deploy.pubxml" />
     <Content Include="Dummy.JSON" />
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />
