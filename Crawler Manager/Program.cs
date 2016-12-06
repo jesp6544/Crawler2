@@ -16,8 +16,8 @@ namespace Crawler_Manager {
         private static void Main(string[] Args) {
             MessageBox.Show("\"" + Application.ExecutablePath + "\" 5");
 
-            RegistryKey rkApp = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\RunOnce", true);
-            rkApp.SetValue("Krawler Manager", "\"" + Application.ExecutablePath + "\" %5", RegistryValueKind.String);
+            //RegistryKey rkApp = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\RunOnce", true);
+            //rkApp.SetValue("Krawler Manager", "\"" + Application.ExecutablePath + "\" %5", RegistryValueKind.String);
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
