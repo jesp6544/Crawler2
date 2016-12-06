@@ -214,6 +214,21 @@ namespace Crawler {
                         CommitWithin = 200
                     });
                 solr.Commit();
+                //foreach (var i in this.GetContent(doc, "//img[]"))    //Might work?
+                //{
+                //    solr.Add(
+                //    new HTMLContent()
+                //    {
+                //        Alt = i[alt],     //Does not work like this
+                //        Path = i[src]     //Does not work like this
+                //    },
+                //    new AddParameters()
+                //    {
+                //        CommitWithin = 200
+                //    });
+                //    solr.Commit();  //Somehow save to another core
+                //}
+
             }
             /*List<Content> contentList = this.GetContent(doc);
 
@@ -223,7 +238,7 @@ namespace Crawler {
             this.ctx.SaveChanges();
             this.TotalContentTagsFound += contentList.Count;*/
 
-            if(follow) {
+            if (follow) {
                 /*
                 List<Link> linkList = this.GetLinks(currentPage, doc);
                 foreach(Link l in linkList) {
