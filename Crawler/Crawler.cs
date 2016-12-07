@@ -295,10 +295,9 @@ namespace Crawler
 
         private List<string> GetContent(HtmlAgilityPack.HtmlDocument doc, string XPath)
         {
-            bool stuff = true;
-            //List<string[2]>
-            List<Image> imgList = new List<Image>();
-            HtmlNodeCollection contentNodeCollection = doc.DocumentNode.SelectNodes("//img");
+            List<string> l = new List<string>();
+
+            HtmlNodeCollection contentNodeCollection = doc.DocumentNode.SelectNodes(XPath);
             if (contentNodeCollection != null)
             {
                 foreach (HtmlNode node in contentNodeCollection)
