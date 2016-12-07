@@ -222,7 +222,7 @@ namespace Crawler
 
             if (follow)
             {
-                List<Link> linkList = GetLinks(currentPage, doc);
+                List<Link> linkList = GetLinks(doc);
                 foreach (Link l in linkList)
                 {
                     ctx.Entry(l).State = EntityState.Added;
@@ -292,7 +292,7 @@ namespace Crawler
             return contentList;
         }
 
-        private List<Link> GetLinks(Page currentPage, HtmlDocument doc)
+        private List<Link> GetLinks(HtmlDocument doc)
         {
             List<Link> linkList = new List<Link>();
 

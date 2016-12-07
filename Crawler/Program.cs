@@ -8,7 +8,7 @@ namespace Crawler
 {
     internal static class Program
     {
-        private static readonly DateTime startTime = DateTime.Now;
+        private static readonly DateTime StartTime = DateTime.Now;
 
         private static void Main()
         {
@@ -27,7 +27,7 @@ namespace Crawler
             Crawler crawler = new Crawler();
             Thread renderThread = new Thread(() =>
             {
-                Program.Render(crawler);
+                Render(crawler);
             });
             renderThread.Start();
 
@@ -60,13 +60,12 @@ namespace Crawler
                             Console.WriteLine();
                             Console.WriteLine(@"Stats:");
                             Console.WriteLine(@"Pages crawled:        {0}", crawler.LinksCrawled);
-                            //Console.WriteLine("Total content tags:   {0}", crawler.TotalContentTagsFound);
                             Console.WriteLine(@"Average crawl time:   {0}ms", crawler.LoopBenchMarker.AverageTime);
                         }
                         Console.WriteLine(@"NoFollows:            {0}", crawler.NoFollows);
                         Console.WriteLine(@"NoIndexes:            {0}", crawler.NoIndex);
 
-                        TimeSpan totalRunTime = DateTime.Now.Subtract(Program.startTime);
+                        TimeSpan totalRunTime = DateTime.Now.Subtract(StartTime);
                         Console.WriteLine();
                         string totalRunTimeNoMili = totalRunTime.ToString();
                         Console.WriteLine(@"Total time run:       {0}", totalRunTime.ToString("d':'hh':'mm':'ss"));
