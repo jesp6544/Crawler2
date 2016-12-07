@@ -224,14 +224,12 @@ namespace Crawler {
             this.TotalContentTagsFound += contentList.Count;*/
 
             if(follow) {
-                /*
                 List<Link> linkList = this.GetLinks(currentPage, doc);
                 foreach(Link l in linkList) {
                     this.ctx.Entry(l).State = EntityState.Added;
                 }
                 this.ctx.SaveChanges();
                 this.TotalLinkTagsFound += linkList.Count;
-                */
             }
 
             this.LinksCrawled++;
@@ -376,7 +374,7 @@ namespace Crawler {
 
         private Page addOrGetPage(string foundLink) {
             using(var c = new CrawlerContext()) {
-                c.Database.ExecuteSqlCommandAsync(string.Format(@"
+                c.Database.ExecuteSqlCommand(string.Format(@"
                     declare @url varchar(500) = '{0}';
 
                     IF NOT EXISTS (SELECT TOP 1 * FROM Pages WHERE (url = @url))
