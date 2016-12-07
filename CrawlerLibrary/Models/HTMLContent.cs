@@ -27,6 +27,10 @@ namespace CrawlerLibrary.Models {
         [SolrField("h3")]
         public ICollection<string> H3 { get; set; }
 
+
+        [SolrField("images")]
+        public ICollection<Image> Images { get; set; }
+
         [SolrField("publishdate")]
         public string PublishDate { get; set; } = String.Format("{0:MM/dd/yyyy}", DateTime.Now);
 
