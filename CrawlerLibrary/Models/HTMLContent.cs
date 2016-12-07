@@ -2,10 +2,10 @@
 using System;
 using System.Collections.Generic;
 
-namespace CrawlerLibrary.Models {
-
-    public class HTMLContent {
-
+namespace CrawlerLibrary.Models
+{
+    public class HTMLContent
+    {
         [SolrField("id")]
         public string ID { get; set; }
 
@@ -28,11 +28,8 @@ namespace CrawlerLibrary.Models {
         public ICollection<string> H3 { get; set; }
 
 
-        [SolrField("images")]
-        public ICollection<Image> Image { get; set; }
-
-        [SolrField("publishdate")]
-        public string PublishDate { get; set; } = String.Format("{0:MM/dd/yyyy}", DateTime.Now);
+        [SolrField("timestamp")]
+        public string TimeStamp { get; set; } = String.Format("{0:MM/dd/yyyy H:mm:ss zzz}", DateTime.Now);
 
         /*[SolrField("absoluteuri")]
         public string AbsoluteUri { get; set; }
@@ -50,7 +47,7 @@ namespace CrawlerLibrary.Models {
         public string Extension { get; set; }
 
         [SolrField("publishdate")]
-        public string PublishDate { get; set; }
+        public string TimeStamp { get; set; }
 
         [SolrField("text")]
         public ICollection<string> Text { get; set; }*/
