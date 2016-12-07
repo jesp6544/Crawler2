@@ -208,26 +208,13 @@ namespace Crawler {
                         P = this.GetContent(doc, "//p[text()]"),
                         H1 = this.GetContent(doc, "//h1[text()]"),
                         H2 = this.GetContent(doc, "//h2[text()]"),
-                        H3 = this.GetContent(doc, "//h3[text()]")
+                        H3 = this.GetContent(doc, "//h3[text()]"),
+                        Images = this.GetImages(doc)
                     },
                     new AddParameters() {
-                        CommitWithin = 200
+                        CommitWithin = 5000
                     });
-                solr.Commit();
-                //foreach (var i in this.GetContent(doc, "//img[]"))    //Might work?
-                //{
-                //    solr.Add(
-                //    new HTMLContent()
-                //    {
-                //        Alt = i[alt],     //Does not work like this
-                //        Path = i[src]     //Does not work like this
-                //    },
-                //    new AddParameters()
-                //    {
-                //        CommitWithin = 200
-                //    });
-                //    solr.Commit();  //Somehow save to another core
-                //}
+                
 
             }
             /*List<Content> contentList = this.GetContent(doc);
@@ -259,6 +246,26 @@ namespace Crawler {
                 //ctx.Entry(this.CurrentPage).State = EntityState.Modified;
                 ctx.SaveChanges();
             }
+        }
+
+        private List<Image> GetImages(HtmlAgilityPack.HtmlDocument doc)
+        {
+            List<string[2]>
+            List<Image> imgList = new List<Image>();
+            HtmlNodeCollection contentNodeCollection = doc.DocumentNode.SelectNodes("//img");
+            if (contentNodeCollection != null)
+            {
+                foreach (HtmlNode node in contentNodeCollection)
+                {
+                    imgList.Add(
+                    new Image()
+                    {
+                        AltText = node.Attributes["alt"].Value.Trim(),
+                        Path = node.Attributes["src"].Value.Trim()
+                    });
+                }
+            }
+            return imgList;
         }
 
         private List<string> GetContent(HtmlAgilityPack.HtmlDocument doc, string XPath) {

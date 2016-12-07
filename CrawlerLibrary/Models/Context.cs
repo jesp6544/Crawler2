@@ -10,7 +10,7 @@ namespace CrawlerLibrary.Models
     {
         public DbSet<Page> Pages { get; set; }
         public DbSet<Content> Content { get; set; }
-        public DbSet<Image> Images { get; set; }
+        //public DbSet<Image> Images { get; set; }
         public DbSet<Link> Links { get; set; }
         public DbSet<Error> Errors { get; set; }
 
