@@ -1,10 +1,7 @@
-﻿using System;
-using System.Configuration;
-using CrawlerLibrary.Models;
+﻿using CrawlerLibrary.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NUnit.Framework;
-using SolrNet;
-using System.Linq;
+using System.Configuration;
 using Assert = NUnit.Framework.Assert;
 
 namespace Crawler.Tests
@@ -37,12 +34,13 @@ namespace Crawler.Tests
             crawler.CurrentPage = crawler.GetNextPage();
             Assert.IsNotNull(crawler.CurrentPage);
         }
+
         [Test, NUnit.Framework.Description("Testing if broken links / internal links gets fixed")]
         public void FixLinkTest()
         {
             var crawler = new Crawler();
             PrivateObject obj = new PrivateObject(crawler);
-            string bla = (string)obj.Invoke("FixLink",new object[]{"http://www.lort.com", "/martinErLort", true });
+            string bla = (string)obj.Invoke("FixLink", new object[] { "http://www.lort.com", "/martinErLort", true });
             string bla2 = (string)obj.Invoke("FixLink", new object[] { "http://www.lort.com", "//martinErLort", true });
             string bla3 = (string)obj.Invoke("FixLink", new object[] { "http://www.lort.com", "?martinErLort", true });
             Assert.AreEqual(bla, "http://www.lort.com/martinErLort");
@@ -60,11 +58,10 @@ namespace Crawler.Tests
                 Startup.Init<HTMLContent>(bla);
             });
         }
+
         [Test, NUnit.Framework.Description("")]
         public void xxTest()
         {
-            
         }
-    
     }
 }

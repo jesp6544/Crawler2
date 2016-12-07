@@ -1,19 +1,17 @@
-﻿using Microsoft.Win32;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace Crawler_Manager {
-
-    internal static class Program {
-
+namespace Crawler_Manager
+{
+    internal static class Program
+    {
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
-        private static void Main(string[] Args) {
+        private static void Main(string[] Args)
+        {
             //MessageBox.Show("\"" + Application.ExecutablePath + "\" 5");
 
             //RegistryKey rkApp = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\RunOnce", true);
@@ -21,12 +19,17 @@ namespace Crawler_Manager {
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            if(Args.Length >= 1)
-                try {
-                    if(int.Parse(Args.First()) > 0) {
+            if (Args.Length >= 1)
+                try
+                {
+                    if (int.Parse(Args.First()) > 0)
+                    {
                         Application.Run(new Form1(int.Parse(Args.First())));
                     }
-                } catch(Exception) { } else {
+                }
+                catch (Exception) { }
+            else
+            {
             }
             Application.Run(new Form1());
         }

@@ -1,12 +1,7 @@
-﻿using CrawlerLibrary.Models;
-using Microsoft.Practices.ServiceLocation;
-using Newtonsoft.Json;
-using SolrNet;
-using SolrNet.Commands.Parameters;
+﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Net.Http;
 using System.Web.Http;
 
 namespace CrawlerMVC.Controllers.api
@@ -25,7 +20,7 @@ namespace CrawlerMVC.Controllers.api
         {
             using (var client = new WebClient())
             {
-                int offset = (page - 1)*10;
+                int offset = (page - 1) * 10;
                 //http://176.23.159.28:8983/solr/testcore/query?q=p:{0}&hl=true&hl.fl=p&hl.fragsize=500&fl=id+title+resourcename&start={1}
                 //http://176.23.159.28:8983/solr/testcore/query?q={0}&qf=resourcename^2+title^3&hl=true&hl.fl=p&hl.fragsize=500&fl=id+title+resourcename&start={1}
                 Uri uri =

@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using SolrNet.Attributes;
+﻿using SolrNet.Attributes;
 
 namespace CrawlerLibrary.Models
 {

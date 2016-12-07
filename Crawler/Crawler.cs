@@ -3,17 +3,11 @@ using HtmlAgilityPack;
 using Microsoft.Practices.ServiceLocation;
 using SolrNet;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Mime;
-using System.Text;
-using System.Threading;
-using System.Windows.Forms;
 
 namespace Crawler
 {
@@ -23,7 +17,7 @@ namespace Crawler
 
         public readonly BenchMarker LoopBenchMarker = new BenchMarker(100);
 
-        private string currentHTML;
+        private string _currentHtml;
         public Page CurrentPage { get; set; }
 
         public int ContentTagCount { get; private set; }
@@ -31,19 +25,18 @@ namespace Crawler
         public int LinkTagCount { get; private set; }
         public int CurrentLinkTagIndex { get; private set; }
 
-        public long TotalContentTagsFound { get; private set; }
-        public long TotalLinkTagsFound { get; private set; }
+        private long TotalLinkTagsFound { get; set; }
 
-        public int LinksCrawled { get; private set; } = 0;
+        public int LinksCrawled { get; private set; }
 
         public int TotalErrors { get; private set; }
 
-        public int NoFollows { get; private set; } = 0;
-        public int NoIndex { get; private set; } = 0;
+        public int NoFollows { get; private set; }
+        public int NoIndex { get; private set; }
 
         public Crawler()
         {
-            this.Reset();
+            Reset();
         }
 
         public Page GetNextPage()
@@ -70,7 +63,7 @@ namespace Crawler
 					(DATEDIFF(s, '1970-01-01 00:00:00', LastAttempt) <= DATEDIFF(s, '1970-01-01 00:00:00', GETDATE()) - 60*60 OR LastAttempt IS NULL)
 					AND (E.ErrorCount < 2 OR E.ErrorCount IS NULL)
 				";
-            return this.ctx.Pages.SqlQuery(query).Single();
+            return ctx.Pages.SqlQuery(query).Single();
         }
 
         public void Start()
@@ -82,74 +75,71 @@ namespace Crawler
 
                 try
                 {
-                    this.CurrentPage = this.GetNextPage();
+                    CurrentPage = GetNextPage();
 
-                    using (DbContextTransaction scope = this.ctx.Database.BeginTransaction())
+                    using (DbContextTransaction scope = ctx.Database.BeginTransaction())
                     {
-                        this.CrawlPage(this.CurrentPage);
+                        CrawlPage(CurrentPage);
 
-                        this.CurrentPage.scanned = true;
-                        ctx.Entry(this.CurrentPage).State = EntityState.Modified;
+                        CurrentPage.scanned = true;
+                        ctx.Entry(CurrentPage).State = EntityState.Modified;
                         ctx.SaveChanges();
 
                         scope.Commit();
                     }
 
                     stopwatch.Stop();
-                    this.LoopBenchMarker.Insert(stopwatch.ElapsedMilliseconds);
+                    LoopBenchMarker.Insert(stopwatch.ElapsedMilliseconds);
                 }
                 catch (Exception e)
                 {
-                    int pageID = this.CurrentPage.id;
+                    int pageId = CurrentPage.id;
 
-                    this.Reset();
+                    Reset();
 
-                    Error error = new Error() { error = e.Message + "\n" + e.StackTrace, Page_id = pageID };
+                    Error error = new Error { error = e.Message + "\n" + e.StackTrace, Page_id = pageId };
                     ctx.Entry(error).State = EntityState.Added;
                     ctx.SaveChanges();
-                    this.TotalErrors++;
-                    //Console.WriteLine(e.Message);
-                    //Console.WriteLine(e.StackTrace);
+                    TotalErrors++;
                 }
-                //this.LinksCrawled++;
-                this.Reset();
+                Reset();
             }
         }
 
         private void Reset()
         {
-            if (this.ctx != null)
-                this.ctx.Dispose();
-            this.ctx = new CrawlerContext();
-            this.ctx.Configuration.AutoDetectChangesEnabled = false;
+            if (ctx != null)
+                ctx.Dispose();
+            ctx = new CrawlerContext();
+            ctx.Configuration.AutoDetectChangesEnabled = false;
 
-            this.ContentTagCount = 0;
-            this.CurrentContentTagIndex = 0;
-            this.LinkTagCount = 0;
-            this.CurrentLinkTagIndex = 0;
-            this.CurrentPage = null;
-            this.currentHTML = "";
+            ContentTagCount = 0;
+            CurrentContentTagIndex = 0;
+            LinkTagCount = 0;
+            CurrentLinkTagIndex = 0;
+            CurrentPage = null;
+            _currentHtml = "";
         }
 
         private void CrawlPage(Page currentPage)
         {
-            string HTML;
+            string html;
             using (var client = new WebClient())
             {
                 Uri uri = new Uri(currentPage.url);
                 try
                 {
-                    this.currentHTML = client.DownloadString(uri);
-                    HTML = this.currentHTML;
+                    _currentHtml = client.DownloadString(uri);
+                    html = _currentHtml;
                 }
-                catch (WebException e)
+                catch (WebException)
                 {
                     return;
                 }
             }
 
-            HtmlAgilityPack.HtmlDocument doc = new HtmlAgilityPack.HtmlDocument();
-            doc.LoadHtml(HTML);
+            HtmlDocument doc = new HtmlDocument();
+            doc.LoadHtml(html);
 
             // Allow search engines robots to index the page, you don’t have to add this to your pages, as it’s the default.
             bool index = true;
@@ -175,13 +165,16 @@ namespace Crawler
                     }
                 }
             }
-            catch (Exception) { }
+            catch (Exception)
+            {
+                // ignored
+            }
 
             if (!follow)
-                this.NoFollows++;
+                NoFollows++;
 
             if (!index)
-                this.NoIndex++;
+                NoIndex++;
 
             if (!follow && !index)
                 return;
@@ -195,108 +188,55 @@ namespace Crawler
                     string href = node.Attributes["href"].Value;
                     if (href != currentPage.url)
                     {
-                        this.addOrGetPage(href);
+                        AddOrGetPage(href);
                         return;
                     }
                 }
             }
-            catch (Exception) { }
+            catch (Exception)
+            {
+                // ignored
+            }
 
             if (index)
             {
-                string tHTML = currentHTML;
                 ISolrOperations<HTMLContent> solr = ServiceLocator.Current.GetInstance<ISolrOperations<HTMLContent>>();
-
-                /*MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(tHTML));
-                ExtractResponse extractResponse = solr.Extract(new ExtractParameters(ms, currentPage.id.ToString(), currentPage.url) {
-                    AutoCommit = true,
-                    Capture = "p",
-                    CaptureAttributes = false,
-                    //DefaultField = "text",
-                    StreamType = "text/html",
-                    //ExtractFormat = ExtractFormat.Text,
-                    XPath = "/xhtml:html/xhtml:body/xhtml:div/descendant:node()",
-                });*/
-
-                //solr.BuildSpellCheckDictionary();
-                //solr.Optimize();
-
                 string title = doc.DocumentNode.SelectSingleNode("//title").InnerText;
-                //this.updateTitle(title);
 
                 solr.Add(
-                    new HTMLContent()
+                    new HTMLContent
                     {
                         ID = currentPage.id.ToString(),
                         Title = title,
                         URL = currentPage.url,
-                        P = this.GetContent(doc, "//p[text()]"),
-                        H1 = this.GetContent(doc, "//h1[text()]"),
-                        H2 = this.GetContent(doc, "//h2[text()]"),
-                        H3 = this.GetContent(doc, "//h3[text()]"),
+                        P = GetContent(doc, "//p[text()]"),
+                        H1 = GetContent(doc, "//h1[text()]"),
+                        H2 = GetContent(doc, "//h2[text()]"),
+                        H3 = GetContent(doc, "//h3[text()]")
                     },
-                    new AddParameters()
+                    new AddParameters
                     {
                         CommitWithin = 5000
                     });
             }
-            /*List<Content> contentList = this.GetContent(doc);
 
-            foreach(Content c in contentList) {
-                this.ctx.Entry(c).State = EntityState.Added;
-            }
-            this.ctx.SaveChanges();
-            this.TotalContentTagsFound += contentList.Count;*/
-
-            if (follow) {
-                
-                List<Link> linkList = this.GetLinks(currentPage, doc);
-                foreach(Link l in linkList) {
-                    this.ctx.Entry(l).State = EntityState.Added;
-                }
-                this.ctx.SaveChanges();
-                this.TotalLinkTagsFound += linkList.Count;
-                
-            }
-
-            this.LinksCrawled++;
-        }
-
-        private void updateTitle(string title)
-        {
-            using (var ctx = new CrawlerContext())
+            if (follow)
             {
-                ctx.Pages.Attach(this.CurrentPage);
-                this.CurrentPage.title = title;
-                //ctx.Entry(this.CurrentPage).State = EntityState.Modified;
+                List<Link> linkList = GetLinks(currentPage, doc);
+                foreach (Link l in linkList)
+                {
+                    ctx.Entry(l).State = EntityState.Added;
+                }
                 ctx.SaveChanges();
+                TotalLinkTagsFound += linkList.Count;
             }
+
+            LinksCrawled++;
         }
 
-        //private List<Image> GetImages(HtmlAgilityPack.HtmlDocument doc)
-        //{
-        //    //List<string[2]>
-        //    List<Image> imgList = new List<Image>();
-        //    HtmlNodeCollection contentNodeCollection = doc.DocumentNode.SelectNodes("//img");
-        //    if (contentNodeCollection != null)
-        //    {
-        //        foreach (HtmlNode node in contentNodeCollection)
-        //        {
-        //            imgList.Add(
-        //            new Image()
-        //            {
-        //                AltText = node.Attributes["alt"].Value.Trim(),
-        //                Path = node.Attributes["src"].Value.Trim()
-        //            });
-        //        }
-        //    }
-        //    return imgList;
-        //}
-
-        private List<string> GetContent(HtmlAgilityPack.HtmlDocument doc, string XPath)
+        private List<string> GetContent(HtmlDocument doc, string XPath)
         {
             List<string> l = new List<string>();
-
             HtmlNodeCollection contentNodeCollection = doc.DocumentNode.SelectNodes(XPath);
             if (contentNodeCollection != null)
             {
@@ -307,26 +247,22 @@ namespace Crawler
                         l.Add(content);
                 }
             }
-
             return l;
         }
 
-        private List<Content> GetContent(HtmlAgilityPack.HtmlDocument doc)
+        private List<Content> GetContent(HtmlDocument doc)
         {
             List<Content> contentList = new List<Content>();
 
             HtmlNodeCollection contentNodeCollection = doc.DocumentNode.SelectNodes("(//h1|//h2|//h3|//h4|//h5|//h6|//p)[text()]");
             if (contentNodeCollection != null)
             {
-                this.ContentTagCount = contentNodeCollection.Count;
-
+                ContentTagCount = contentNodeCollection.Count;
                 int i = 1;
                 foreach (HtmlNode node in contentNodeCollection)
                 {
-                    this.CurrentContentTagIndex = i++;
-
+                    CurrentContentTagIndex = i++;
                     string content = node.InnerText.Trim();
-
                     if (content.Length > 0)
                     {
                         int index = 0;
@@ -340,9 +276,9 @@ namespace Crawler
                                 offset = content.Substring(index, len).LastIndexOf(' ');
 
                             string tmpContent = content.Substring(index, offset);
-                            contentList.Add(new Content()
+                            contentList.Add(new Content
                             {
-                                page_id = this.CurrentPage.id,
+                                page_id = CurrentPage.id,
                                 tag = node.OriginalName.Trim(),
                                 text = tmpContent
                             });
@@ -350,33 +286,25 @@ namespace Crawler
                             index += offset;
                         } while (content.Length < index && content.Length > 800);
                     }
-
-                    /*if(content.Length > 0)
-                        contentList.Add(new Content() {
-                            page_id = this.CurrentPage.id,
-                            tag = node.OriginalName.Trim(),
-                            text = content
-                        });
-                    */
                 }
             }
 
             return contentList;
         }
 
-        private List<Link> GetLinks(Page currentPage, HtmlAgilityPack.HtmlDocument doc)
+        private List<Link> GetLinks(Page currentPage, HtmlDocument doc)
         {
             List<Link> linkList = new List<Link>();
 
             HtmlNodeCollection linkNodeCollection = doc.DocumentNode.SelectNodes("//a[@href and text()]");
             if (linkNodeCollection != null)
             {
-                this.LinkTagCount = linkNodeCollection.Count;
+                LinkTagCount = linkNodeCollection.Count;
 
                 int i = 1;
                 foreach (HtmlNode node in linkNodeCollection)
                 {
-                    this.CurrentLinkTagIndex = i++;
+                    CurrentLinkTagIndex = i++;
 
                     HtmlAttribute att = node.Attributes["href"];
 
@@ -389,24 +317,15 @@ namespace Crawler
                     bool internalLink = false;
                     try
                     {
-                        foundLink = this.FixLink(this.CurrentPage.url, foundLink, ref internalLink);
+                        foundLink = FixLink(CurrentPage.url, foundLink, ref internalLink);
                     }
                     catch (Exception e)
                     {
                         if (e.Message == "Skip.")
                             continue;
-                        else
-                            throw;
+                        throw;
                     }
-
-                    this.addOrGetPage(foundLink);
-
-                    /*linkList.Add(new Link() {
-                        text = linkText,
-                        local = internalLink,
-                        from_id = currentPage.id,
-                        to_id = this.addOrGetPage(foundLink).id
-                    });*/
+                    AddOrGetPage(foundLink);
                 }
             }
             return linkList;
@@ -445,356 +364,21 @@ namespace Crawler
             return foundLink;
         }
 
-        private Page addOrGetPage(string foundLink) {
-            using(var c = new CrawlerContext()) {
+        private Page AddOrGetPage(string foundLink)
+        {
+            using (var c = new CrawlerContext())
+            {
                 c.Database.ExecuteSqlCommand(string.Format(@"
-                    declare @url varchar(500) = '{0}';
+					declare @url varchar(500) = '{0}';
 
-                    IF NOT EXISTS (SELECT TOP 1 * FROM Pages WHERE (url = @url))
-                    BEGIN
-                        INSERT INTO Pages(url, scanned)
-	                    Values(@url, 0)
-                    END
-                ", foundLink));
+					IF NOT EXISTS (SELECT TOP 1 * FROM Pages WHERE (url = @url))
+					BEGIN
+						INSERT INTO Pages(url, scanned)
+						Values(@url, 0)
+					END
+				", foundLink));
             }
             return new Page();
-
-            return this.ctx.Pages.SqlQuery(string.Format(@"
-                    declare @url varchar(500) = '{0}';
-
-                    IF NOT EXISTS (SELECT TOP 1 * FROM Pages WHERE (url = @url))
-                    BEGIN
-                        INSERT INTO Pages(url, scanned)
-	                    OUTPUT inserted.*
-                        Values(@url, 0)
-                    END
-                    ELSE
-                    BEGIN
-	                    SELECT TOP 1 * FROM Pages WHERE url = @url
-                    END
-                ", foundLink)).Single();
-
-            Page foundPage = null;
-
-            using (var tctx = new CrawlerContext())
-            {
-                tctx.Configuration.AutoDetectChangesEnabled = false;
-                try
-                {
-                    foundPage = tctx.Pages.First(x => x.url == foundLink);
-                }
-                catch (Exception)
-                {
-                    foundPage = new Page() { url = foundLink.Trim(), LastAttempt = null };
-
-                    tctx.Entry(foundPage).State = EntityState.Added;
-                    tctx.SaveChanges();
-                }
-            }
-
-            return foundPage;
-        }
-
-        public static void oldStart()
-        {
-            using (var ctx = new CrawlerContext())
-            {
-                int maxQueueItems = 100;
-
-                BenchMarker BM = new BenchMarker(100);
-
-                //using(var dbContextTransaction = ctx.Database.BeginTransaction()) {
-                try
-                {
-                    //while(this.running)
-                    while (true)
-                    {
-                        try
-                        {
-                            string query = @"
-								UPDATE TOP (1) Pages
-								SET LastAttempt = GETDATE()
-								OUTPUT
-									inserted.id,
-									inserted.url,
-									inserted.title,
-									inserted.LastAttempt,
-									inserted.scanned
-								WHERE
-									scanned = 0
-									AND
-									(DATEDIFF(s, '1970-01-01 00:00:00', LastAttempt) <= DATEDIFF(s, '1970-01-01 00:00:00', GETDATE()) - 60*60 OR LastAttempt IS NULL)";
-                            Page page = ctx.Pages.SqlQuery(query).Single();
-
-                            //ctx.Database.ExecuteSqlCommand("BEGIN TRAN");
-
-                            Stopwatch stopwatch = new Stopwatch();
-                            stopwatch.Start();
-
-                            //using(var scope = new TransactionScope(TransactionScopeOption.Required,
-                            //    new TransactionOptions() { IsolationLevel = IsolationLevel.RepeatableRead })) {
-                            using (DbContextTransaction scope = ctx.Database.BeginTransaction())
-                            {
-                                //Page page = ctx.Pages.SqlQuery("SELECT TOP 1 * FROM Pages WITH (HOLDLOCK, ROWLOCK) WHERE scanned = 0").Single();
-                                //ctx.Database.ExecuteSqlCommand("SELECT TOP 1 * FROM Pages WITH (TABLOCKX, HOLDLOCK) WHERE scanned = 0");
-
-                                //Page page = ctx.Pages.First(x => x.scanned == false);
-                                if (page != null)
-                                {
-                                    Console.WriteLine("Scanning Page: " + page.url);
-
-                                    Crawler.oldcrawlPage(page);
-
-                                    page.scanned = true;
-                                    ctx.Entry(page).State = EntityState.Modified;
-                                    ctx.SaveChanges();
-                                    //ctx.Database.ExecuteSqlCommand("COMMIT TRAN");
-                                    scope.Commit();
-                                    //scope.Complete();
-                                }
-                                else
-                                {
-                                    Thread.Sleep(1000);
-                                    Console.WriteLine("No more links to scan.");
-                                }
-                            }
-
-                            stopwatch.Stop();
-
-                            long lastScan = stopwatch.ElapsedMilliseconds;
-                            BM.Insert(lastScan);
-
-                            /*timeQueue.Enqueue(lastScan);
-
-                            if(timeQueue.Count > maxQueueItems)
-                                timeQueue.Dequeue();
-
-                            long averageScanTime = timeQueue.Sum() / timeQueue.Count;*/
-
-                            Console.WriteLine();
-                            Console.WriteLine("Last scan took:\t{0} ms.", lastScan);
-                            Console.WriteLine("Average scan time:\t{0} ms.", BM.AverageTime);
-                            Console.WriteLine();
-                        }
-                        catch (Exception e)
-                        {
-                            //ctx.Database.ExecuteSqlCommand("ROLLBACK TRAN");
-                            Console.WriteLine(e.Message);
-                            Console.WriteLine(e.StackTrace);
-                            //throw;
-                        }
-                    }
-                }
-                catch (Exception) { }
-                //dbContextTransaction.Commit();
-                /*  } catch(Exception e) {
-                      dbContextTransaction.Rollback();
-                  }*/
-                //}
-            }
-
-            /*using(var ctx = new CrawlerContext()) {
-                while(this.running) {
-                    try {
-                        Page page = ctx.Pages.First(x => x.scanned == false);
-                        if(page != null) {
-                            Console.WriteLine("Scanning Page: " + page.url);
-
-                            this.crawlUrl(page);
-
-                            page.scanned = true;
-                            ctx.Entry(page).State = EntityState.Modified;
-                            ctx.SaveChanges();
-                        } else {
-                            Thread.Sleep(1000);
-                            Console.WriteLine("No more links to scan.");
-                        }
-                    } catch(Exception e) {
-                        Console.WriteLine(e.StackTrace);
-                        //throw;
-                    }
-                }
-            }*/
-        }
-
-        private static void oldcrawlPage(Page currentPage)
-        {
-            using (var client = new WebClient())
-            {
-                Uri uri = new Uri(currentPage.url);
-                string HTML;
-                try
-                {
-                    HTML = client.DownloadString(uri);
-                }
-                catch (WebException e)
-                {
-                    //Console.WriteLine(e.StackTrace);
-                    return;
-                    //throw;
-                }
-
-                HtmlAgilityPack.HtmlDocument doc = new HtmlAgilityPack.HtmlDocument();
-                doc.LoadHtml(HTML);
-
-                string title = doc.DocumentNode.SelectSingleNode("//title").InnerText;
-
-                using (var ctx = new CrawlerContext())
-                {
-                    ctx.Pages.Attach(currentPage);
-                    currentPage.title = title;
-                    //ctx.Entry(currentPage).State = EntityState.Modified;
-                    ctx.SaveChanges();
-                }
-
-                HtmlNodeCollection contentNodeCollection = doc.DocumentNode.SelectNodes("(//h1|//h2|//h3|//h4|//h5|//h6|//p)[text()]");
-                if (contentNodeCollection != null)
-                {
-                    Console.WriteLine("Found content tags: \t{0}", contentNodeCollection.Count);
-                    using (var ctx = new CrawlerContext())
-                    {
-                        ctx.Configuration.AutoDetectChangesEnabled = false;
-
-                        foreach (HtmlNode node in contentNodeCollection)
-                        {
-                            string content = node.InnerText.Trim();
-
-                            //Console.WriteLine("Found {0} tag", node.OriginalName.Trim());
-
-                            if (content.Length > 0)
-                                ctx.Content.Add(new Content()
-                                {
-                                    page_id = currentPage.id,
-                                    tag = node.OriginalName.Trim(),
-                                    text = content.Trim()
-                                });
-                        }
-                        ctx.SaveChanges();
-                    }
-                }
-
-                HtmlNodeCollection linkNodeCollection = doc.DocumentNode.SelectNodes("//a[@href and text()]");
-                if (linkNodeCollection != null)
-                {
-                    Console.WriteLine("Found {0} links", linkNodeCollection.Count);
-
-                    List<Page> linkList = new List<Page>();
-
-                    CrawlerContext ctx = new CrawlerContext();
-                    ctx.Configuration.AutoDetectChangesEnabled = false;
-
-                    int i = 1;
-                    BenchMarker BM = new BenchMarker(100);
-                    int entitySaveCount = 50;
-                    foreach (HtmlNode node in linkNodeCollection)
-                    {
-                        HtmlAttribute att = node.Attributes["href"];
-
-                        string foundLink = att.Value;
-                        string linkText = node.InnerText.Trim();
-
-                        if (string.IsNullOrEmpty(linkText))
-                            continue;
-
-                        bool internalLink = false;
-
-                        if (foundLink.StartsWith("//"))
-                        {
-                            foundLink = uri.Scheme + "://" + foundLink.Substring(2);
-                        }
-                        else if (foundLink.StartsWith("/"))
-                        {
-                            // is internal
-                            internalLink = true;
-                            foundLink = uri.GetLeftPart(UriPartial.Authority) + foundLink;
-                        }
-                        else if (foundLink.StartsWith("?"))
-                        {
-                            // is internal
-                            internalLink = true;
-                            foundLink = uri.GetLeftPart(UriPartial.Path) + foundLink;
-                        }
-                        else
-                        {
-                            continue;
-                        }
-
-                        /*if (linkList.Contains(foundLink) || scannedLinks.Contains(foundLink))
-                        {
-                            continue;
-                        }
-
-                        linkList.Add(foundLink);
-                        Console.WriteLine("Found Page: " + foundLink);
-                        */
-                        //Console.WriteLine("Found Link: " + foundLink);
-                        Page foundPage;
-
-                        Stopwatch stopwatch = new Stopwatch();
-                        stopwatch.Start();
-
-                        using (var tctx = new CrawlerContext())
-                        {
-                            tctx.Configuration.AutoDetectChangesEnabled = false;
-                            try
-                            {
-                                foundPage = tctx.Pages.First(x => x.url == foundLink);
-                            }
-                            catch (Exception)
-                            {
-                                foundPage = new Page() { url = foundLink.Trim() };
-
-                                tctx.Entry(foundPage).State = EntityState.Added;
-                                tctx.SaveChanges();
-                            }
-                        }
-
-                        stopwatch.Stop();
-
-                        long lastScan = stopwatch.ElapsedMilliseconds;
-                        BM.Insert(lastScan);
-
-                        ctx.Set<Link>().Add(new Link()
-                        {
-                            text = linkText,
-                            local = internalLink,
-                            from_id = currentPage.id,
-                            to_id = foundPage.id
-                        });
-
-                        /*ctx.Links.Add(new Link() {
-                            text = linkText.Trim(),
-                            local = internalLink,
-                            from_id = currentPage.id,
-                            to_id = foundPage.id
-                        });*/
-
-                        if (i % entitySaveCount == 0)
-                        {
-                            ctx.SaveChanges();
-                            ctx.Dispose();
-                            ctx = new CrawlerContext();
-                            ctx.Configuration.AutoDetectChangesEnabled = false;
-                        }
-                        i++;
-                    }
-
-                    Console.WriteLine("Avg link find: \t\t {0}ms", BM.AverageTime);
-
-                    Stopwatch SW = new Stopwatch();
-                    SW.Start();
-                    if (ctx.ChangeTracker.HasChanges())
-                        ctx.SaveChanges();
-                    SW.Stop();
-
-                    Console.WriteLine("Savechanges time: \t {0}ms", SW.ElapsedMilliseconds);
-
-                    ctx.Dispose();
-                }
-                //ctx.Pages.AddRange(linkList);
-
-                //ctx.SaveChanges();
-            }
         }
     }
 }

@@ -1,10 +1,10 @@
 ﻿using NUnit.Framework;
 
-namespace Crawler.Tests {
-
+namespace Crawler.Tests
+{
     [TestFixture]
-    internal class TestTests {
-
+    internal class TestTests
+    {
         [Test]
         public void PositiveTestTest() // This test always passes
         {

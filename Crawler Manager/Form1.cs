@@ -1,21 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Diagnostics;
-using System.Drawing;
-using System.Drawing.Text;
-using System.Linq;
 using System.Net;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace Crawler_Manager {
-
-    public partial class Form1 : Form {
+namespace Crawler_Manager
+{
+    public partial class Form1 : Form
+    {
         private int number = 0;
         private List<Process> running = new List<Process>();
         private Thread updateThread;
@@ -24,7 +18,8 @@ namespace Crawler_Manager {
         private int screenY;
         private int screenXCount = 1;
 
-        public Form1() {
+        public Form1()
+        {
             updateThread = new Thread(Updater);
             proccThread = new Thread(ProccWatcher);
             InitializeComponent();
@@ -34,21 +29,25 @@ namespace Crawler_Manager {
             proccThread.Start();
         }
 
-        public Form1(int count) : this() {
+        public Form1(int count) : this()
+        {
             StartProcesses(count);
         }
 
-        private void Download() {
+        private void Download()
+        {
             WebClient webClient = new WebClient();
             webClient.DownloadFile(new Uri("Our hosting/dll.dll"), @"dll.dll");
             //Continue when file finished
         }
 
-        private void Updater() {
+        private void Updater()
+        {
             int timer = 1000 * 60;
-            while(false) //true to enable
+            while (false) //true to enable
             {
-                if(LookForUpdate()) {
+                if (LookForUpdate())
+                {
                     Shutdown(running.Count);
                     //delete old dll
                     Download();
@@ -58,17 +57,20 @@ namespace Crawler_Manager {
             }
         }
 
-        private bool LookForUpdate() {
+        private bool LookForUpdate()
+        {
             //return true if update found
             return false;
         }
 
-        private void ScreenOrder() {
+        private void ScreenOrder()
+        {
             int windowHeight = 255;
             int yMax = screenY / windowHeight;
             screenXCount = running.Count / yMax + 1;
             int i = 0;
-            foreach(Process procc in running) {
+            foreach (Process procc in running)
+            {
                 MoveWindow(procc.MainWindowHandle,
                     (i / yMax) * (screenX / screenXCount),
                     (i % yMax) * windowHeight,
@@ -78,24 +80,30 @@ namespace Crawler_Manager {
             }
         }
 
-        private void ProccWatcher() {
-            while(true) {
-                try {
+        private void ProccWatcher()
+        {
+            while (true)
+            {
+                try
+                {
                     int cpu = 0;
                     long mem = 0;
                     int i = 0;
-                    foreach(Process procc in running) {
-                        try {
-                            if(!(procc.ExitCode != 0))
+                    foreach (Process procc in running)
+                    {
+                        try
+                        {
+                            if (!(procc.ExitCode != 0))
                                 continue;
-                        } catch(Exception) { }
+                        }
+                        catch (Exception) { }
 
-                        if(!procc.HasExited && procc.Responding)
+                        if (!procc.HasExited && procc.Responding)
                             continue;
 
                         LogTxtBox.Text += "A process has shutdown with error code" + Environment.NewLine;
                         running.Remove(procc);
-                        if(!procc.HasExited)
+                        if (!procc.HasExited)
                             procc.Kill();
                         StartProcesses(1 + running.Count);
                         procc.Refresh();
@@ -103,67 +111,92 @@ namespace Crawler_Manager {
                     }
                     MemLabel.Text = mem.ToString();
                     ScreenOrder();
-                } catch(Exception e) {
+                }
+                catch (Exception e)
+                {
                 }
                 Thread.Sleep(100);
             }
         }
 
-        private void Shutdown(int num) {
-            foreach(Process procc in running) {
-                if(num > 0) {
-                    try {
+        private void Shutdown(int num)
+        {
+            foreach (Process procc in running)
+            {
+                if (num > 0)
+                {
+                    try
+                    {
                         procc.CloseMainWindow();
                         num--;
                         running.Remove(procc);
-                    } catch(Exception) {
+                    }
+                    catch (Exception)
+                    {
                         LogTxtBox.Text = LogTxtBox.Text + "Error in closure of processes" + Environment.NewLine;
                     }
                 }
             }
         }
 
-        private void StartProcesses(int num) {
-            if(num > 0 && num != running.Count)
-                try {
-                    if(num < running.Count)
+        private void StartProcesses(int num)
+        {
+            if (num > 0 && num != running.Count)
+                try
+                {
+                    if (num < running.Count)
                         Shutdown(running.Count - num);
-                    else {
+                    else
+                    {
                         int toStart = num - running.Count;
-                        for(int i = 0; i < toStart; i++) {
+                        for (int i = 0; i < toStart; i++)
+                        {
                             Process procc = Process.Start(@"Crawler.exe");
                             running.Add(procc);
                         }
                     }
-                } catch(Exception) {
+                }
+                catch (Exception)
+                {
                     LogTxtBox.Text = LogTxtBox.Text + " Failed to start all processes" + Environment.NewLine;
-                } else if(num <= 0)
+                }
+            else if (num <= 0)
                 Shutdown(running.Count);
         }
 
         [DllImport("user32.dll", SetLastError = true)]
         internal static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
 
-        private void GoBtn_Click(object sender, EventArgs e) {
-            try {
+        private void GoBtn_Click(object sender, EventArgs e)
+        {
+            try
+            {
                 StartProcesses(int.Parse(NumTxtBox.Text));
-            } catch(Exception) {
+            }
+            catch (Exception)
+            {
                 LogTxtBox.Text = "Please insert a positiv number" + Environment.NewLine;
             }
         }
 
-        private void Form1_Closing(object sender, FormClosingEventArgs e) {
+        private void Form1_Closing(object sender, FormClosingEventArgs e)
+        {
             updateThread.Abort();
             proccThread.Abort();
-            foreach(Process procc in running) {
-                try {
+            foreach (Process procc in running)
+            {
+                try
+                {
                     procc.Kill();
-                } catch(Exception) {
+                }
+                catch (Exception)
+                {
                 }
             }
         }
 
-        private void Form1_Load(object sender, EventArgs e) {
+        private void Form1_Load(object sender, EventArgs e)
+        {
         }
     }
 }

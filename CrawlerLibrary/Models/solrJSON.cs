@@ -1,14 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace CrawlerLibrary.Models
+﻿namespace CrawlerLibrary.Models
 {
-    class solrJSON
+    internal class solrJSON
     {
-
         public class Rootobject
         {
             public Responseheader responseHeader { get; set; }
@@ -109,6 +102,5 @@ namespace CrawlerLibrary.Models
         {
             public string[] p { get; set; }
         }
-
     }
 }

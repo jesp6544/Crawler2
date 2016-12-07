@@ -27,7 +27,6 @@ namespace CrawlerLibrary.Models
         [SolrField("h3")]
         public ICollection<string> H3 { get; set; }
 
-
         [SolrField("timestamp")]
         public string TimeStamp { get; set; } = String.Format("{0:MM/dd/yyyy H:mm:ss zzz}", DateTime.Now);
 

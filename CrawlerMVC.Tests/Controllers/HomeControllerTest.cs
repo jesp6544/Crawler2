@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Web.Mvc;
+﻿using CrawlerMVC.Controllers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using CrawlerMVC;
-using CrawlerMVC.Controllers;
+using System.Web.Mvc;
 
 namespace CrawlerMVC.Tests.Controllers
 {
