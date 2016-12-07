@@ -208,11 +208,10 @@ namespace Crawler {
                         P = this.GetContent(doc, "//p[text()]"),
                         H1 = this.GetContent(doc, "//h1[text()]"),
                         H2 = this.GetContent(doc, "//h2[text()]"),
-                        H3 = this.GetContent(doc, "//h3[text()]"),
-                        Images = this.GetImages(doc)
+                        H3 = this.GetContent(doc, "//h3[text()]")
                     },
                     new AddParameters() {
-                        CommitWithin = 5000
+                        CommitWithin = 2000
                     });
                 
 
@@ -226,14 +225,14 @@ namespace Crawler {
             this.TotalContentTagsFound += contentList.Count;*/
 
             if (follow) {
-                /*
+                
                 List<Link> linkList = this.GetLinks(currentPage, doc);
                 foreach(Link l in linkList) {
                     this.ctx.Entry(l).State = EntityState.Added;
                 }
                 this.ctx.SaveChanges();
                 this.TotalLinkTagsFound += linkList.Count;
-                */
+                
             }
 
             this.LinksCrawled++;
@@ -248,21 +247,26 @@ namespace Crawler {
             }
         }
 
-        private List<Image> GetImages(HtmlAgilityPack.HtmlDocument doc)
+        private List<Image> GetImages(HtmlAgilityPack.HtmlDocument doc, Page currentPage)
         {
-            List<string[2]>
+            bool stuff = true;
+            //List<string[2]>
             List<Image> imgList = new List<Image>();
             HtmlNodeCollection contentNodeCollection = doc.DocumentNode.SelectNodes("//img");
             if (contentNodeCollection != null)
             {
                 foreach (HtmlNode node in contentNodeCollection)
                 {
-                    imgList.Add(
-                    new Image()
+                    string alt = node.Attributes["alt"].Value.Trim();
+                    if (alt != "")
                     {
-                        AltText = node.Attributes["alt"].Value.Trim(),
-                        Path = node.Attributes["src"].Value.Trim()
-                    });
+                        imgList.Add(
+                        new Image()
+                        {
+                            AltText = alt,
+                            Path = FixLink(CurrentPage.url, node.Attributes["src"].Value.Trim(), ref stuff)
+                        });
+                    }
                 }
             }
             return imgList;
@@ -398,7 +402,7 @@ namespace Crawler {
 
         private Page addOrGetPage(string foundLink) {
             using(var c = new CrawlerContext()) {
-                c.Database.ExecuteSqlCommandAsync(string.Format(@"
+                c.Database.ExecuteSqlCommand(string.Format(@"
                     declare @url varchar(500) = '{0}';
 
                     IF NOT EXISTS (SELECT TOP 1 * FROM Pages WHERE (url = @url))
