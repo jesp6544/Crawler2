@@ -1,8 +1,7 @@
+using System.Data.Entity.Migrations;
+
 namespace Crawler.Migrations
 {
-    using System;
-    using System.Data.Entity.Migrations;
-    
     public partial class test : DbMigration
     {
         public override void Up()
@@ -14,7 +13,7 @@ namespace Crawler.Migrations
                     id = c.Int(nullable: false, identity: true),
                     tag = c.String(nullable: false),
                     text = c.String(nullable: false),
-                    page_id = c.Int(nullable: false),
+                    page_id = c.Int(nullable: false)
                 })
                 .PrimaryKey(t => t.id)
                 .ForeignKey("dbo.Pages", t => t.page_id, cascadeDelete: true)
@@ -28,7 +27,7 @@ namespace Crawler.Migrations
                     url = c.String(nullable: false, maxLength: 500, unicode: false),
                     title = c.String(),
                     LastAttempt = c.DateTime(),
-                    scanned = c.Boolean(),
+                    scanned = c.Boolean()
                 })
                 .PrimaryKey(t => t.id)
                 .Index(t => t.url, unique: true);
@@ -41,7 +40,7 @@ namespace Crawler.Migrations
                     text = c.String(nullable: false),
                     local = c.Boolean(nullable: false),
                     from_id = c.Int(nullable: false),
-                    to_id = c.Int(),
+                    to_id = c.Int()
                 })
                 .PrimaryKey(t => t.id)
                 .ForeignKey("dbo.Pages", t => t.from_id)
@@ -52,18 +51,17 @@ namespace Crawler.Migrations
             CreateTable(
                 "dbo.Errors",
                 c => new
-                    {
-                        id = c.Int(nullable: false, identity: true),
-                        error = c.String(),
-                        time = c.DateTime(nullable: false),
-                        Page_id = c.Int(),
-                    })
+                {
+                    id = c.Int(nullable: false, identity: true),
+                    error = c.String(),
+                    time = c.DateTime(nullable: false),
+                    Page_id = c.Int()
+                })
                 .PrimaryKey(t => t.id)
                 .ForeignKey("dbo.Pages", t => t.Page_id)
                 .Index(t => t.Page_id);
-            
         }
-        
+
         public override void Down()
         {
             DropForeignKey("dbo.Errors", "Page_id", "dbo.Pages");
