@@ -211,9 +211,10 @@ namespace Crawler {
                         H3 = this.GetContent(doc, "//h3[text()]")
                     },
                     new AddParameters() {
-                        CommitWithin = 200
+                        CommitWithin = 2000
                     });
-                solr.Commit();
+                
+
             }
             /*List<Content> contentList = this.GetContent(doc);
 
@@ -223,13 +224,15 @@ namespace Crawler {
             this.ctx.SaveChanges();
             this.TotalContentTagsFound += contentList.Count;*/
 
-            if(follow) {
+            if (follow) {
+                
                 List<Link> linkList = this.GetLinks(currentPage, doc);
                 foreach(Link l in linkList) {
                     this.ctx.Entry(l).State = EntityState.Added;
                 }
                 this.ctx.SaveChanges();
                 this.TotalLinkTagsFound += linkList.Count;
+                
             }
 
             this.LinksCrawled++;
@@ -242,6 +245,30 @@ namespace Crawler {
                 //ctx.Entry(this.CurrentPage).State = EntityState.Modified;
                 ctx.SaveChanges();
             }
+        }
+
+        private List<Image> GetImages(HtmlAgilityPack.HtmlDocument doc, Page currentPage)
+        {
+            List<string> l = new List<string>();
+
+            HtmlNodeCollection contentNodeCollection = doc.DocumentNode.SelectNodes(XPath);
+            if (contentNodeCollection != null)
+            {
+                foreach (HtmlNode node in contentNodeCollection)
+                {
+                    string alt = node.Attributes["alt"].Value.Trim();
+                    if (alt != "")
+                    {
+                        imgList.Add(
+                        new Image()
+                        {
+                            AltText = alt,
+                            Path = FixLink(CurrentPage.url, node.Attributes["src"].Value.Trim(), ref stuff)
+                        });
+                    }
+                }
+            }
+            return imgList;
         }
 
         private List<string> GetContent(HtmlAgilityPack.HtmlDocument doc, string XPath) {
