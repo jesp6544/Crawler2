@@ -8,11 +8,12 @@ using System.Data.Entity;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
 
-namespace Crawler
-{
-    public class Crawler
-    {
+namespace Crawler {
+
+    public class Crawler {
         private CrawlerContext ctx;
         private string _currentHtml;
         public int ContentTagCount { get; private set; }
@@ -27,13 +28,11 @@ namespace Crawler
         public Page CurrentPage { get; set; }
         public readonly BenchMarker LoopBenchMarker = new BenchMarker(100);
 
-        public Crawler()
-        {
+        public Crawler() {
             Reset();
         }
 
-        public Page GetNextPage()
-        {
+        public Page GetNextPage() {
             const string query = @"
 				UPDATE TOP (1) Pages
 				SET LastAttempt = GETDATE()
@@ -59,20 +58,16 @@ namespace Crawler
             return ctx.Pages.SqlQuery(query).Single();
         }
 
-        public void Start()
-        {
-            while (true)
-            {
+        public void Start() {
+            while(true) {
                 Stopwatch stopwatch = new Stopwatch();
                 stopwatch.Start();
 
-                try
-                {
+                try {
                     CurrentPage = GetNextPage();
 
-                    using (DbContextTransaction scope = ctx.Database.BeginTransaction())
-                    {
-                        CrawlPage(CurrentPage);
+                    using(DbContextTransaction scope = ctx.Database.BeginTransaction()) {
+                        CrawlPage(CurrentPage).Wait();
 
                         CurrentPage.scanned = true;
                         ctx.Entry(CurrentPage).State = EntityState.Modified;
@@ -83,9 +78,7 @@ namespace Crawler
 
                     stopwatch.Stop();
                     LoopBenchMarker.Insert(stopwatch.ElapsedMilliseconds);
-                }
-                catch (Exception e)
-                {
+                } catch(Exception e) {
                     int pageId = CurrentPage.id;
 
                     Reset();
@@ -102,8 +95,7 @@ namespace Crawler
             }
         }
 
-        private void Reset()
-        {
+        private void Reset() {
             ctx?.Dispose();
             ctx = new CrawlerContext();
             ctx.Configuration.AutoDetectChangesEnabled = false;
@@ -116,90 +108,89 @@ namespace Crawler
             _currentHtml = "";
         }
 
-        private void CrawlPage(Page currentPage)
-        {
+        private async Task CrawlPage(Page currentPage) {
             string html;
-            using (var client = new WebClient())
-            {
-                Uri uri = new Uri(currentPage.url);
-                try
-                {
-                    _currentHtml = client.DownloadString(uri);
-                    html = _currentHtml;
-                }
-                catch (WebException)
-                {
+
+            using(HttpClient client = new HttpClient())
+            using(HttpResponseMessage response = await client.GetAsync(currentPage.url))
+            using(HttpContent content = response.Content) {
+                // ... Read the string.
+
+                if(!content.Headers.ContentType.ToString().ToLower().Contains("text/html")) {
                     return;
                 }
+
+                _currentHtml = await content.ReadAsStringAsync();
+                html = _currentHtml;
             }
 
+            /*using(var client = new WebClient()) {
+                Uri uri = new Uri(currentPage.url);
+                try {
+                    _currentHtml = client.DownloadString(uri);
+                    html = _currentHtml;
+                } catch(WebException) {
+                    return;
+                }
+            }*/
+
             HtmlDocument doc = new HtmlDocument();
-            doc.LoadHtml(html);
+            try {
+                doc.LoadHtml(html);
+            } catch(Exception) { }
 
             // Allow search engines robots to index the page, you don’t have to add this to your pages, as it’s the default.
             bool index = true;
             // Tells the search engines robots to follow the links on the page, whether it can index it or not.
             bool follow = true;
 
-            try
-            {
+            try {
                 HtmlNode node = doc.DocumentNode.SelectSingleNode("//meta[@name='robots']");
-                if (node != null)
-                {
+                if(node != null) {
                     string content = node.Attributes["content"].Value;
-                    if (content.ToLower().Contains("nofollow"))
+                    if(content.ToLower().Contains("nofollow"))
                         follow = false;
 
-                    if (content.ToLower().Contains("noindex"))
+                    if(content.ToLower().Contains("noindex"))
                         index = false;
 
-                    if (content.ToLower().Contains("none"))
-                    {
+                    if(content.ToLower().Contains("none")) {
                         index = false;
                         follow = false;
                     }
                 }
-            }
-            catch (Exception)
-            {
+            } catch(Exception) {
                 // ignored
             }
 
-            if (!follow)
+            if(!follow)
                 NoFollows++;
 
-            if (!index)
+            if(!index)
                 NoIndex++;
 
-            if (!follow && !index)
+            if(!follow && !index)
                 return;
 
-            try
-            {
+            try {
                 HtmlNode node = doc.DocumentNode.SelectSingleNode("//link[@rel='canonical']");
 
-                if (node != null)
-                {
+                if(node != null) {
                     var href = node.Attributes["href"].Value;
-                    if (href != currentPage.url)
-                    {
+                    if(href != currentPage.url) {
                         AddPage(href);
                         return;
                     }
                 }
-            }
-            catch (Exception)
-            {
+            } catch(Exception) {
                 // ignored
             }
 
-            if (index)
-            {
+            if(index) {
                 ISolrOperations<HTMLContent> solr = ServiceLocator.Current.GetInstance<ISolrOperations<HTMLContent>>();
                 var title = doc.DocumentNode.SelectSingleNode("//title").InnerText;
                 solr.Add(
-                    new HTMLContent
-                    {
+                    new HTMLContent {
                         ID = currentPage.id.ToString(),
                         Title = title,
                         URL = currentPage.url,
@@ -208,17 +199,14 @@ namespace Crawler
                         H2 = GetContent(doc, "//h2[text()]"),
                         H3 = GetContent(doc, "//h3[text()]")
                     },
-                    new AddParameters
-                    {
+                    new AddParameters {
                         CommitWithin = 2000
                     });
             }
 
-            if (follow)
-            {
+            if(follow) {
                 List<Link> linkList = GetLinks(doc);
-                foreach (Link l in linkList)
-                {
+                foreach(Link l in linkList) {
                     ctx.Entry(l).State = EntityState.Added;
                 }
                 ctx.SaveChanges();
@@ -228,17 +216,14 @@ namespace Crawler
             LinksCrawled++;
         }
 
-        private static List<string> GetContent(HtmlDocument doc, string XPath)
-        {
+        private static List<string> GetContent(HtmlDocument doc, string XPath) {
             List<string> l = new List<string>();
 
             HtmlNodeCollection contentNodeCollection = doc.DocumentNode.SelectNodes(XPath);
-            if (contentNodeCollection != null)
-            {
-                foreach (HtmlNode node in contentNodeCollection)
-                {
+            if(contentNodeCollection != null) {
+                foreach(HtmlNode node in contentNodeCollection) {
                     string content = node.InnerText.Trim();
-                    if (content.Length > 0)
+                    if(content.Length > 0)
                         l.Add(content);
                 }
             }
@@ -246,18 +231,15 @@ namespace Crawler
             return l;
         }
 
-        private List<Link> GetLinks(HtmlDocument doc)
-        {
+        private List<Link> GetLinks(HtmlDocument doc) {
             List<Link> linkList = new List<Link>();
 
             HtmlNodeCollection linkNodeCollection = doc.DocumentNode.SelectNodes("//a[@href and text()]");
-            if (linkNodeCollection != null)
-            {
+            if(linkNodeCollection != null) {
                 LinkTagCount = linkNodeCollection.Count;
 
                 int i = 1;
-                foreach (HtmlNode node in linkNodeCollection)
-                {
+                foreach(HtmlNode node in linkNodeCollection) {
                     CurrentLinkTagIndex = i++;
 
                     var att = node.Attributes["href"];
@@ -265,17 +247,14 @@ namespace Crawler
                     var foundLink = att.Value;
                     var linkText = node.InnerText.Trim();
 
-                    if (string.IsNullOrEmpty(linkText))
+                    if(string.IsNullOrEmpty(linkText))
                         continue;
 
                     bool internalLink = false;
-                    try
-                    {
+                    try {
                         foundLink = FixLink(CurrentPage.url, foundLink, ref internalLink);
-                    }
-                    catch (Exception e)
-                    {
-                        if (e.Message == "Skip.")
+                    } catch(Exception e) {
+                        if(e.Message == "Skip.")
                             continue;
                         throw;
                     }
@@ -286,43 +265,32 @@ namespace Crawler
             return linkList;
         }
 
-        private string FixLink(string currentLink, string foundLink, ref bool internalLink)
-        {
+        private string FixLink(string currentLink, string foundLink, ref bool internalLink) {
             var uri = new Uri(currentLink);
 
-            if (foundLink.StartsWith("//"))
-            {
+            if(foundLink.StartsWith("//")) {
                 foundLink = uri.Scheme + "://" + uri.Authority + foundLink.Substring(1);
-            }
-            else if (foundLink.StartsWith("/"))
-            {
+            } else if(foundLink.StartsWith("/")) {
                 // is internal
                 internalLink = true;
                 foundLink = uri.GetLeftPart(UriPartial.Authority) + foundLink;
-            }
-            else if (foundLink.StartsWith("?"))
-            {
+            } else if(foundLink.StartsWith("?")) {
                 // is internal
                 internalLink = true;
                 foundLink = uri.GetLeftPart(UriPartial.Path) + foundLink;
-            }
-            else
-            {
+            } else {
                 throw new Exception("Skip.");
             }
 
-            if (foundLink.Contains('#'))
-            {
+            if(foundLink.Contains('#')) {
                 foundLink = foundLink.Substring(0, foundLink.IndexOf('#'));
             }
 
             return foundLink;
         }
 
-        private static void AddPage(string foundLink)
-        {
-            using (var c = new CrawlerContext())
-            {
+        private static void AddPage(string foundLink) {
+            using(var c = new CrawlerContext()) {
                 c.Database.ExecuteSqlCommand($@"
                     declare @url varchar(500) = '{foundLink}';
 

@@ -75,9 +75,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="connections.config">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    <None Include="connections.config" />
     <None Include="packages.config" />
     <None Include="SolrNet.chm" />
   </ItemGroup>
