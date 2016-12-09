@@ -14,7 +14,7 @@ namespace Crawler
         {
             AppDomain.CurrentDomain.UnhandledException += delegate (object sender, UnhandledExceptionEventArgs args)
             {
-                Exception e = (Exception)args.ExceptionObject;
+                var e = (Exception)args.ExceptionObject;
                 Console.WriteLine(@"Unhandled exception: " + e);
                 ISolrOperations<HTMLContent> solr = ServiceLocator.Current.GetInstance<ISolrOperations<HTMLContent>>();
                 solr.Commit();
@@ -23,8 +23,8 @@ namespace Crawler
 
             Startup.InitContainer();
             Startup.Init<HTMLContent>("http://176.23.159.28:8983/solr/new_core2");
-            Crawler crawler = new Crawler();
-            Thread renderThread = new Thread(() =>
+            var crawler = new Crawler();
+            var renderThread = new Thread(() =>
             {
                 Render(crawler);
             });
@@ -58,16 +58,16 @@ namespace Crawler
                             Console.WriteLine();
                             Console.WriteLine(@"Stats:");
                             Console.WriteLine(@"Pages crawled:        {0}", crawler.LinksCrawled);
-                            Console.WriteLine("Average crawl time:   {0}ms", crawler.LoopBenchMarker.AverageTime);
+                            Console.WriteLine(@"Average crawl time:   {0}ms", crawler.LoopBenchMarker.AverageTime);
                         }
                         Console.WriteLine(@"NoFollows:            {0}", crawler.NoFollows);
                         Console.WriteLine(@"NoIndexes:            {0}", crawler.NoIndex);
 
                         TimeSpan totalRunTime = DateTime.Now.Subtract(StartTime);
                         Console.WriteLine();
-                        Console.WriteLine("Total time run:       {0}", totalRunTime.ToString("d':'hh':'mm':'ss"));
+                        Console.WriteLine(@"Total time run:       {0:d':'hh':'mm':'ss}", totalRunTime);
                         Console.WriteLine();
-                        Console.Write("Total errors:         {0}", crawler.TotalErrors);
+                        Console.Write(@"Total errors:         {0}", crawler.TotalErrors);
                     }
                 }
 

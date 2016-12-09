@@ -190,7 +190,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="config\" />
-    <Folder Include="SOLRNET\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CrawlerLibrary\CrawlerLibrary.csproj">
