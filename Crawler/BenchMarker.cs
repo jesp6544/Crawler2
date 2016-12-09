@@ -1,27 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Crawler
 {
     public class BenchMarker
     {
-        private int maxQueueItems = 100;
-        private Queue<long> timeQueue = new Queue<long>();
+        private readonly int _maxQueueItems = 100;
+        private readonly Queue<long> _timeQueue = new Queue<long>();
 
         public BenchMarker(int maxItems)
         {
-            this.maxQueueItems = maxItems;
+            _maxQueueItems = maxItems;
         }
 
         public void Insert(long lastScan)
         {
-            timeQueue.Enqueue(lastScan);
+            _timeQueue.Enqueue(lastScan);
 
-            if (timeQueue.Count > maxQueueItems)
-                timeQueue.Dequeue();
+            if (_timeQueue.Count > _maxQueueItems)
+                _timeQueue.Dequeue();
         }
 
         public long AverageTime
@@ -30,7 +28,7 @@ namespace Crawler
             {
                 try
                 {
-                    return timeQueue.Sum() / timeQueue.Count;
+                    return _timeQueue.Sum() / _timeQueue.Count;
                 }
                 catch (Exception)
                 {

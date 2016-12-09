@@ -1,8 +1,7 @@
+using System.Data.Entity.Migrations;
+
 namespace Crawler.Migrations
 {
-    using System;
-    using System.Data.Entity.Migrations;
-    
     public partial class test1 : DbMigration
     {
         public override void Up()
@@ -10,14 +9,13 @@ namespace Crawler.Migrations
             CreateTable(
                 "dbo.testtests",
                 c => new
-                    {
-                        id = c.Int(nullable: false, identity: true),
-                        bla = c.String(),
-                    })
+                {
+                    id = c.Int(nullable: false, identity: true),
+                    bla = c.String()
+                })
                 .PrimaryKey(t => t.id);
-            
         }
-        
+
         public override void Down()
         {
             DropTable("dbo.testtests");
