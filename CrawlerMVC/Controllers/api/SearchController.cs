@@ -31,7 +31,7 @@ namespace CrawlerMVC.Controllers.api
                 Uri uri =
                     new Uri(
                         string.Format(
-                            "http://176.23.159.28:8983/solr/new_core2/query?q={0}&qf=url^2+title^3&hl=true&hl.fl=p&hl.fragsize=500&fl=id+title+url&start={1}",
+                            "http://176.23.159.28:8983/solr/new_core2/query?q={0}&qf=h1^2+url^2+title^2&hl=true&hl.fl=p&hl.fragsize=500&fl=id+title+url&start={1}",
                             query, offset));
                 try
                 {
@@ -41,7 +41,7 @@ namespace CrawlerMVC.Controllers.api
                     foreach (dynamic i in dyn.response.docs)
                     {
                         Link temp = new Link();
-                        temp.URL = i.resourcename[0];
+                        temp.URL = i.url[0];
                         temp.Title = i.title[0];
                         try
                         {
