@@ -4,16 +4,25 @@ using SolrNet;
 using System;
 using System.Threading;
 
-namespace Crawler
-{
-    internal static class Program
-    {
+namespace Crawler {
+
+    internal static class Program {
         private static readonly DateTime StartTime = DateTime.Now;
 
-        private static void Main()
+        public static Crawler Crawler
         {
-            AppDomain.CurrentDomain.UnhandledException += delegate (object sender, UnhandledExceptionEventArgs args)
+            get
             {
+                throw new System.NotImplementedException();
+            }
+
+            set
+            {
+            }
+        }
+
+        private static void Main() {
+            AppDomain.CurrentDomain.UnhandledException += delegate (object sender, UnhandledExceptionEventArgs args) {
                 var e = (Exception)args.ExceptionObject;
                 Console.WriteLine(@"Unhandled exception: " + e);
                 ISolrOperations<HTMLContent> solr = ServiceLocator.Current.GetInstance<ISolrOperations<HTMLContent>>();
@@ -24,37 +33,27 @@ namespace Crawler
             Startup.InitContainer();
             Startup.Init<HTMLContent>("http://176.23.159.28:8983/solr/new_core2");
             var crawler = new Crawler();
-            var renderThread = new Thread(() =>
-            {
+            var renderThread = new Thread(() => {
                 Render(crawler);
             });
             renderThread.Start();
             crawler.Start();
         }
 
-        private static void Render(Crawler crawler)
-        {
-            while (true)
-            {
+        private static void Render(Crawler crawler) {
+            while(true) {
                 Console.Clear();
 
-                if (crawler == null)
-                {
+                if(crawler == null) {
                     Console.WriteLine(@"Starting...");
-                }
-                else
-                {
-                    if (crawler.CurrentPage == null)
-                    {
+                } else {
+                    if(crawler.CurrentPage == null) {
                         Console.WriteLine(@"Finding next link...");
-                    }
-                    else
-                    {
+                    } else {
                         Console.WriteLine(@"Scanning:             {0}", crawler.CurrentPage.url);
                         Console.WriteLine(@"content tags:         {0}/{1}", crawler.CurrentContentTagIndex, crawler.ContentTagCount);
                         Console.WriteLine(@"link tags:            {0}/{1}", crawler.CurrentLinkTagIndex, crawler.LinkTagCount);
-                        if (crawler.LinksCrawled > 0)
-                        {
+                        if(crawler.LinksCrawled > 0) {
                             Console.WriteLine();
                             Console.WriteLine(@"Stats:");
                             Console.WriteLine(@"Pages crawled:        {0}", crawler.LinksCrawled);

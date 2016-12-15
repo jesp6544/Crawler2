@@ -111,17 +111,34 @@ namespace Crawler {
         private async Task CrawlPage(Page currentPage) {
             string html;
 
-            using(HttpClient client = new HttpClient())
-            using(HttpResponseMessage response = await client.GetAsync(currentPage.url))
-            using(HttpContent content = response.Content) {
-                // ... Read the string.
+            try {
+                using(HttpClient client = new HttpClient())
+                using(HttpResponseMessage response = await client.GetAsync(currentPage.url)) {
+                    HttpStatusCode statusCode = response.StatusCode;
 
-                if(!content.Headers.ContentType.ToString().ToLower().Contains("text/html")) {
-                    return;
+                    //System.Windows.Forms.MessageBox.Show(statusCode.ToString());
+
+                    if(response.StatusCode == HttpStatusCode.Accepted || response.StatusCode == HttpStatusCode.OK) {
+                    } else {
+                        //System.Windows.Forms.MessageBox.Show("Skipping link: " + currentPage.url);
+                        return;
+                    }
+
+                    using(HttpContent content = response.Content) {
+                        // ... Read the string.
+
+                        if(!content.Headers.ContentType.ToString().ToLower().Contains("text/html")) {
+                            //System.Windows.Forms.MessageBox.Show(content.Headers.ContentType.ToString());
+                            return;
+                        }
+
+                        _currentHtml = await content.ReadAsStringAsync();
+                        html = _currentHtml;
+                    }
                 }
-
-                _currentHtml = await content.ReadAsStringAsync();
-                html = _currentHtml;
+            } catch(Exception e) {
+                //System.Windows.Forms.MessageBox.Show(e.Message);
+                throw;
             }
 
             /*using(var client = new WebClient()) {
@@ -137,7 +154,9 @@ namespace Crawler {
             HtmlDocument doc = new HtmlDocument();
             try {
                 doc.LoadHtml(html);
-            } catch(Exception) { }
+            } catch(Exception) {
+                return;
+            }
 
             // Allow search engines robots to index the page, you don’t have to add this to your pages, as it’s the default.
             bool index = true;
@@ -204,14 +223,14 @@ namespace Crawler {
                     });
             }
 
-            if(follow) {
+            /*if(follow) {
                 List<Link> linkList = GetLinks(doc);
                 foreach(Link l in linkList) {
                     ctx.Entry(l).State = EntityState.Added;
                 }
                 ctx.SaveChanges();
                 TotalLinkTagsFound += linkList.Count;
-            }
+            }*/
 
             LinksCrawled++;
         }
@@ -300,6 +319,18 @@ namespace Crawler {
 	                    Values(@url, 0)
                     END
                 ");
+            }
+        }
+
+        public BenchMarker BenchMarker
+        {
+            get
+            {
+                throw new System.NotImplementedException();
+            }
+
+            set
+            {
             }
         }
     }

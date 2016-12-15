@@ -59,18 +59,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Class1.cs" />
     <Compile Include="Models\Content.cs" />
     <Compile Include="Models\Context.cs" />
     <Compile Include="Models\Error.cs" />
     <Compile Include="Models\HTMLContent.cs" />
-    <Compile Include="Models\Image.cs" />
     <Compile Include="Models\Link.cs" />
     <Compile Include="Models\Page.cs" />
-    <Compile Include="Models\PageBench.cs" />
-    <Compile Include="Models\PageBenchTemp.cs" />
     <Compile Include="Models\SlaveControl.cs" />
-    <Compile Include="Models\solrJSON.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
