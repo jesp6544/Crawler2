@@ -135,6 +135,10 @@ namespace Crawler {
                     using(HttpContent content = response.Content) {
                         // ... Read the string.
 
+                        ICollection<string> HTTPLangs = content.Headers.ContentLanguage;
+                        if(!(HTTPLangs.Contains("en") || HTTPLangs.Contains("da") || HTTPLangs.Count == 0))
+                            return;
+
                         if(!content.Headers.ContentType.ToString().ToLower().Contains("text/html")) {
                             //System.Windows.Forms.MessageBox.Show(content.Headers.ContentType.ToString());
                             return;
@@ -149,22 +153,21 @@ namespace Crawler {
                 throw;
             }
 
-            /*using(var client = new WebClient()) {
-                Uri uri = new Uri(currentPage.url);
-                try {
-                    _currentHtml = client.DownloadString(uri);
-                    html = _currentHtml;
-                } catch(WebException) {
-                    return;
-                }
-            }*/
-
             HtmlDocument doc = new HtmlDocument();
             try {
                 doc.LoadHtml(html);
             } catch(Exception) {
                 return;
             }
+            try {
+                HtmlNode node = doc.DocumentNode.SelectSingleNode("//html");
+                if(node != null) { // Really tho?
+                    string HTMLLang = node.Attributes["lang"].Value;
+
+                    if(!(HTMLLang.Contains("en") || HTMLLang.Contains("da")))
+                        return;
+                }
+            } catch(Exception) { }
 
             // Allow search engines robots to index the page, you don’t have to add this to your pages, as it’s the default.
             bool index = true;
@@ -231,14 +234,14 @@ namespace Crawler {
                     });
             }
 
-            /*if(follow) {
+            if(follow) {
                 List<Link> linkList = GetLinks(doc);
                 foreach(Link l in linkList) {
                     ctx.Entry(l).State = EntityState.Added;
                 }
                 ctx.SaveChanges();
                 TotalLinkTagsFound += linkList.Count;
-            }*/
+            }
 
             LinksCrawled++;
         }
