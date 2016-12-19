@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Crawler {
@@ -65,7 +66,14 @@ namespace Crawler {
 
                 try {
                     CurrentPage = GetNextPage();
+                } catch(Exception) { }
 
+                if(this.CurrentPage == null) {
+                    Thread.Sleep(1000);
+                    continue;
+                }
+
+                try {
                     using(DbContextTransaction scope = ctx.Database.BeginTransaction()) {
                         CrawlPage(CurrentPage).Wait();
 
