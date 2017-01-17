@@ -67,12 +67,17 @@
     <Compile Include="Models\Image.cs" />
     <Compile Include="Models\Link.cs" />
     <Compile Include="Models\Page.cs" />
+    <Compile Include="Models\PageBench.cs" />
+    <Compile Include="Models\PageBenchTemp.cs" />
     <Compile Include="Models\SlaveControl.cs" />
     <Compile Include="Models\solrJSON.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="connections.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="packages.config" />
     <None Include="SolrNet.chm" />
   </ItemGroup>

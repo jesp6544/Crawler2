@@ -156,8 +156,8 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <None Include="connections.config">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    <None Include="..\CrawlerLibrary\connections.config">
+      <Link>connections.config</Link>
     </None>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
