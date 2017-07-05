@@ -31,7 +31,7 @@ namespace Crawler {
             };*/
 
             Startup.InitContainer();
-            Startup.Init<HTMLContent>("http://176.23.159.28:8983/solr/new_core2");
+            Startup.Init<HTMLContent>("http://XXX.XXX.XXX.XXX:PORT/Dir/To/Core"); //QQQQ
             var crawler = new Crawler();
             var renderThread = new Thread(() => {
                 Render(crawler);

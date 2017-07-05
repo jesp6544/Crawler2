@@ -107,7 +107,7 @@ namespace CrawlerLibrary.Models
         {
             protected override void Seed(CrawlerContext ctx)
             {
-                Page d = new Page() { url = "https://en.wikipedia.org/wiki/Main_Page" };
+                Page d = new Page() { url = "https://en.wikipedia.org/wiki/Main_Page" };    //QQQQ
                 ctx.Entry(d).State = EntityState.Added;
                 base.Seed(ctx);
             }
