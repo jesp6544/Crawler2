@@ -14,7 +14,7 @@ namespace CrawlerLibrary.Models
         public DbSet<Link> Links { get; set; }
         public DbSet<Error> Errors { get; set; }
 
-        public CrawlerContext() : base("name=CrawlerConnectionString")  //to azure DB
+        public CrawlerContext() : base("name=CrawlerConnectionString")  //to azure DB //QQQQ
         {
             Database.SetInitializer<CrawlerContext>(new DBInitializer());
         }
